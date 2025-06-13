@@ -22,7 +22,7 @@ dotenv.load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')
-app.config['SQLALCHEMY_DATABASE_URI'] = correct_database_url
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 
 from .models import db, User, Post
