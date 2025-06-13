@@ -18,15 +18,7 @@ __version__ = '0.3.1'
 
 APP_BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-dotenv.load_dotenv(os.path.join(APP_BASE_DIR, '.env'))
-
-correct_database_url = os.environ["DATABASE_URL"]
-
-def fix_database_url():
-    if os.getenv('DATABASE_URL') != correct_database_url:
-        warnings.warn('mod_wsgi got the database wrong!', RuntimeWarning)
-        app.config['SQLALCHEMY_DATABASE_URI'] = correct_database_url
-
+dotenv.load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')
