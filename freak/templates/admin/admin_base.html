@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    {% from "macros/title.html" import title_tag with context %}
+    {{ title_tag("Admin") }}
+    <meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="/static/css/style.css">
+    <style>.done{opacity:.5}</style>
+  </head>
+  <body>
+    <div class="header">
+      <h1><a href="{{ url_for('admin.homepage') }}">{{ site_name }} Admin</a></h1>
+    </div>
+    <div class="content">
+      {% for message in get_flashed_messages() %}
+        <div class="flash">{{ message }}</div>
+      {% endfor %}
+      {% block content %}{% endblock %}
+    </div>
+    <div class="footer">
+      <p><a href="/">Back to {{ app_name }}</a>.</p>
+    </div>
+    <script src="/static/lib.js"></script>
+  </body>
+</html>

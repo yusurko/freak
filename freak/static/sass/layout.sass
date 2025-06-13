@@ -1,0 +1,302 @@
+
+@import "constants.sass"
+
+    
+.content-container
+    display: flex
+    flex-direction: row-reverse
+    align-items: start
+    justify-content: flex-start
+
+.content-nav 
+    width: 320px
+    font-size: smaller
+
+
+.content-main 
+    flex: 1
+
+main
+    min-height: 70vh
+
+
+// __ header styles __ //
+header.header
+    background-color: var(--background)
+    display: flex
+    justify-content: space-between
+    overflow: hidden
+    height: 3em
+    padding: .75em 1.5em
+    margin: -12px
+    line-height: 1
+    h1
+        margin: 0
+        padding: 0
+        font-size: 1.5em
+    .metanav
+        align-self: flex-end
+        font-size: 1.5em
+        margin: auto
+        margin-inline-start: 2em
+        ul
+            list-style: none
+            padding: 0
+            margin: 0
+            > li
+                margin: 0 6px
+        
+        ul, ul > li
+            display: flex
+            flex-direction: row
+            align-items: center
+            justify-content: flex-end
+
+        &, > ul, > ul > li:has(.mini-search-bar)
+            flex: 1
+    .header-username
+        > *
+            display: block
+            font-size: .5em
+            line-height: 1.25
+        .icon
+            font-size: inherit
+    a
+        text-decoration: none
+
+    .mini-search-bar
+        display: flex
+        flex-direction: row
+        align-items: center
+        justify-content: flex-end
+        flex: 1
+        font-size: 1.2rem
+
+        [type="search"]
+            flex: 1
+            border-radius: 0
+            border: 0
+            border-bottom: 2px solid var(--border)
+            background-color: inherit
+
+            :focus
+                background-color: var(--bg-sharp)
+                border-color: var(--accent)
+
+        [type="submit"]
+            height: 0
+            width: 0
+            padding: 0
+            margin: 0
+            border-radius: 0
+            opacity: 0
+            overflow: hidden
+
+        + a
+            display: none
+
+// __ aside styles __ //
+aside.card
+    overflow: hidden
+    > :first-child
+        background-color: var(--accent)
+        padding: 12px
+        margin: -12px -12px 0 -12px
+        position: relative
+    > ul
+        list-style: none
+        margin: 0
+        padding: 0
+        > li
+            border-bottom: 1px solid var(--canvas)
+            padding: 12px
+            &:last-child
+                border-bottom: none
+
+
+.flash
+    border-color: yellow
+    background-color: #fff00040
+
+ul.timeline
+    list-style: none
+    padding: 0 1em
+    > li
+        border-bottom: 1px solid var(--border)
+        margin-bottom: 6px
+        &:last-child
+            border-bottom: 0
+            margin-bottom: 0
+
+ul.inline
+    list-style: none
+    padding: 0
+    margin: 0
+    > li
+        display: inline
+        &::before
+            content: ' · '
+            margin: 0 .5em
+        &:first-child::before
+            content: ''
+
+ul.message-options
+    color: var(--text-alt)
+    list-style: none
+    padding: 0
+    font-size: smaller
+    margin-bottom: -4px
+
+.post-frame
+    margin-left: 3em
+    position: relative
+    min-height: 6em
+    clear: right
+    [dir="rtl"] &
+        margin-left: 0
+        margin-right: 3em
+
+    .message-stats
+        position: absolute
+        left: -3em
+        top: 0
+        display: flex
+        flex-direction: column
+        width: 2em
+        text-align: center
+        line-height: 1.0
+
+        [dir="rtl"] &
+            right: -3em
+            left: unset
+
+        > *
+            display: flex
+            flex-direction: column
+
+        strong
+            font-size: smaller
+
+        a
+            text-decoration: none
+            margin: .25em 0
+    
+.message-meta
+    font-size: smaller
+    color: var(--text-alt)
+
+.shorten
+    max-height: 18em
+    overflow-y: hidden
+    position: relative
+
+    &::after
+        content: ''
+        position: absolute
+        z-index: 10
+        top: 16em
+        left: 0
+        width: 100%
+        height: 2em
+        display: block
+        background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, var(--background) 100%)
+
+
+.comments-button
+    .comment-count
+        display: inline-block
+        min-width: 1em
+        text-align: center
+
+i.icon
+    font-size: inherit
+    font-style: normal
+
+form.boundaryless
+    flex: 1
+    background: transparent
+    color: inherit
+    border: 0
+    border-top: 1px solid var(--border)
+    border-bottom: 1px solid var(--border)
+
+    dd
+        display: flex
+        flex-direction: row
+        width: 100%
+        box-sizing: border-box
+        margin: 0
+
+    textarea, input[type="text"]
+        width: 100%
+
+    textarea
+        min-height: 4em
+
+    p input[type="text"]
+        width: unset
+
+.big-search-bar
+    form
+        display: flex
+        flex-direction: row
+        font-size: 1.6em
+        width: 80%
+        margin: auto
+        > [type="search"]
+            flex: 1
+            border-bottom: 2px solid var(--border)
+
+footer.footer
+    text-align: center
+    font-size: smaller
+    ul
+        list-style: none
+        padding: 0
+        margin: 0
+        > li
+            display: inline-block
+            margin: 0 2em
+
+textarea.comment-area 
+    width: 100%
+
+button, [type="submit"], [type="reset"], [type="button"]
+    background-color: transparent
+    color: var(--accent)
+    border: 1px solid var(--accent)
+    border-radius: 6px
+    padding: 6px 12px
+    margin: 6px
+    cursor: pointer
+
+    &.primary
+        background-color: var(--accent)
+        color: var(--bg-main)
+
+    &[disabled]
+        opacity: .5
+        cursor: not-allowed
+    
+    &:first-child
+        margin-inline-start: 0
+
+    &:last-child
+        margin-inline-end: 0
+
+.button-row-right
+    display: flex
+    flex-direction: row
+    justify-content: flex-end
+
+.comment-frame
+    border: 1px solid var(--border)
+    padding: 12px
+    border-radius: 24px
+    border-start-start-radius: 0
+    min-width: 50%
+    width: 0
+    margin-right: auto
+
+
+

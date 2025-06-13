@@ -1,0 +1,22 @@
+{% extends "reports/report_base.html" %}
+
+{% block heading %}
+<h1>Report post</h1>
+
+<p>You are about to report the post with ID {{ id |to_b32l }}</p>
+{% endblock %}
+
+{% block options %}
+<ul>
+  {% for opt in report_reasons %}
+  <li>
+    <a href="?reason={{ opt.code |urlencode }}">{{ opt.description }}</a>
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}
+
+{% block report_data %}
+<input type="hidden" name="rp_target" value="{{ id }}" />
+<input type="hidden" name="rp_type" value="post" />
+{% endblock %}

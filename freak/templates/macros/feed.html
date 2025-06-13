@@ -1,0 +1,133 @@
+
+{% from "macros/icon.html" import icon, callout with context %}
+
+{% macro feed_post(p) %}
+  <div id="post-{{ p.id | to_b32l }}" class="post-frame" data-endpoint="{{ p.id | to_b32l }}">
+	<h3 class="message-title"><a href="{{ p.url() }}">{{ p.title }}</a></h3>
+	<div class="message-meta">Posted by <a href="{{ p.author.url() }}">@{{ p.author.username }}</a>
+	  {% if p.topic %}
+		on <a href="{{ p.topic.url() }}">+{{ p.topic.name }}</a>
+	  {% else %}
+		on their user page
+	  {% endif %}
+	  - <time datetime="{{ p.created_at.isoformat('T') }}">{{ p.created_at.strftime('%B %-d, %Y at %H:%M') }}</time>
+	</div>
+	<div class="message-stats">
+		{{ feed_upvote(p.id, p.upvotes(), p.upvoted_by(current_user)) }}
+		{{ comment_count(p.comments | count) }}
+	</div>
+
+	<div class="message-content shorten">
+	  {{ p.text_content | to_markdown }}
+	</div>
+  </div>
+{% endmacro %}
+
+{% macro feed_upvote(postid, count, uservote=0) %}
+  <div class="upvote-button" data-endpoint="{{ postid|to_b32l }}">
+	{% if uservote > 0 %}
+	<a href="javascript:void 0" class="upvote-button-up active">
+	  <i class="icon icon-upvote_fill"></i><span class="a11y">upvoted</span>
+	</a>
+	{% else %}
+	<a href="javascript:void 0" class="upvote-button-up">
+	  <i class="icon icon-upvote"></i><span class="a11y">upvote</span>
+	</a>
+	{% endif %}
+	<strong class="upvote-count">{{ count }}</strong>
+	{% if uservote < 0 %}
+	<a href="javascript:void 0" class="upvote-button-down active">
+	  <i class="icon icon-downvote_fill"></i><span class="a11y">downvoted</span>
+	</a>
+	{% else %}
+	<a href="javascript:void 0" class="upvote-button-down">
+	  <i class="icon icon-downvote"></i><span class="a11y">downvote</span>
+	</a>
+	{% endif %}
+  </div>
+{% endmacro %}
+
+{% macro single_comment(comment) %}
+<div class="comment-frame">
+  {% if comment.is_removed %}
+    {% call callout('delete') %}<i>Removed comment</i>{% endcall %}
+  {% else %}
+  <div class="message-meta">
+	{% if comment.author %}
+    <a href="{{ comment.author.url() }}">{{ comment.author.handle() }}</a>
+	{% else %}
+	<i>deleted account</i>
+	{% endif %}
+	{% if comment.author and comment.author == comment.parent_post.author %}
+	<span class="faint">(OP)</span>
+	{% endif %}
+	{# TODO add is_distinguished i.e. official comment #}
+	-
+	<time datetime="{{ comment.created_at.isoformat('T') }}">{{ comment.created_at.strftime('%B %-d, %Y at %H:%M') }}</time>
+  </div>
+
+  <div class="message-content">
+    {{ comment.text_content | to_markdown }}
+  </div>
+  <ul class="message-options inline">
+    {% if comment.author == current_user %}
+	{# TODO add comment edit link #}
+	{% else %}
+	<li><a href="{{ comment.report_url() }}">{{ icon('report') }} Report</a></li>
+	{% endif %}
+	{% if current_user.is_administrator and comment.report_count() %}
+	<li><a href="/admin/reports"><strong>{{ comment.report_count() }}</strong> reports</a></li>
+	{% endif %}
+	<li>ID #{{ comment.id|to_b32l }}</li>
+  </ul>
+  {% endif %}
+</div>
+{% endmacro %}
+
+{% macro comment_count(c) %}
+<div class="comment-count">
+  <a><i class="icon icon-comment"></i></a>
+  <strong>{{ c }}</strong>
+  <span class="a11y">comments</span>
+</div>
+{% endmacro %}
+
+{% macro stop_scrolling(page_n = 1) %}
+{% set choices1 = [
+	'STOP SCROLLING!',
+	'Scrolling is bad for your health',
+	'You scrolled enough for today',
+	'There is grass out there',
+	'Scrolling turns you into an extremist',
+	'Is your time really worth this little?',
+	'You learn nothing from social media'
+] %}
+{% set choices2 = [
+	'Nevermind',
+	'I understand the risks',
+	'I can\'t touch grass',
+	'Get me some more anyway!',
+	'I can\'t quit right now',
+	'A little more~'
+] %}
+{% set choice1 = choices1 | random %}
+{% set choice2 = choices2 | random %}
+<div class="centered">
+	<p><strong class="error">{{ choice1 }}</strong></p>
+	<p><small><a href="?page={{ page_n + 1 }}">{{ choice2 }}</a></small></p>
+</div>
+{% endmacro %}
+
+{% macro no_more_scrolling(page_n = 1) %}
+{% set choices1 = [
+	'Congratulations, you are a no lifer',
+	'Grass is still waiting out there',
+	'You could have done something more productive tho'
+] %}
+<li>
+	<p class="centered">You have reached the rock bottom
+	{%- if page_n > 10 or page_n + (range(10) | random) > 10 -%}
+		. {{ choices1 | random }}
+	{% endif %}
+	</p></li>
+{% endmacro %}

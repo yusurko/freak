@@ -1,0 +1,9 @@
+User-Agent: *
+Disallow: /login
+Disallow: /logout
+Disallow: /create
+Disallow: /register
+Disallow: /createcommunity
+
+User-Agent: GPTBot
+Disallow: /

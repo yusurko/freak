@@ -1,0 +1,36 @@
+
+{% macro nav_topic(topic) %}
+  <aside class="card">
+	<h3>About {{ topic.handle() }}</h3>
+	<ul>
+	  <li><i class="icon icon-info" style="font-size:inherit"></i> {{ topic.description }}</li>
+	  <li>
+		<strong>{{ topic.posts | count }}</strong> posts -
+		<strong>-</strong> subscribers
+	  </li>
+	</ul>
+  </aside>
+{% endmacro %}
+
+{% macro nav_user(user) %}
+  <aside class="card">
+    <h3>About {{ user.handle() }}</h3>
+	<ul>
+	  <li>{# user.biography #}</li>
+	</ul>
+  </aside>
+{% endmacro %}
+
+{% macro nav_top_communities(top_communities) %}
+<aside class="card">
+  <h3>Top Communities</h3>
+  <ul>
+	{% for comm, pcnt, scnt in top_communities %}
+	<li><strong><a href="{{ comm.url() }}">{{ comm.handle() }}</a></strong> - <strong>{{ pcnt }}</strong> posts - <strong>{{ scnt }}</strong> subscribers</li>
+	{% endfor %}
+	{% if current_user and current_user.is_authenticated and current_user.can_create_community() %}
+	<li>Can’t find your community? <a href="/createcommunity">Create a new one.</a></li>
+	{% endif %}
+  </ul>
+</aside>
+{% endmacro %}

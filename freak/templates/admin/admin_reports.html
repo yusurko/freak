@@ -1,0 +1,21 @@
+{% extends "admin/admin_base.html" %}
+{% from "macros/feed.html" import stop_scrolling, no_more_scrolling with context %}
+
+{% block content %}
+  <ul>
+  {% for report in report_list %}
+    <li {% if report.update_status in (1, 2) %} class="done"{% endif %}>
+      
+      <p><strong>#{{ report.id }}</strong> (<a href="{{ url_for('admin.report_detail', id=report.id) }}">detail</a>)</p>
+      <ul class="inline"><li>Reason: <strong>{{ report_reasons[report.reason_code] }}</strong></li>
+      <li>Status: <strong>{{ ['Unreviewed', 'Complete', 'Rejected', 'On hold'][report.update_status] }}</strong></li>
+      </ul>
+    </li>
+  {% endfor %}
+  {% if report_list.has_next %}
+    {{ stop_scrolling(report_list.page) }}
+  {% else %}
+    {{ no_more_scrolling(report_list.page) }}
+  {% endif %}
+  </ul>
+{% endblock %}

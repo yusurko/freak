@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "macros/title.html" import title_tag with context %}
+{% from "macros/create.html" import privacy_select with context %}
+
+{% block title %}{{ title_tag('New post', False) }}{% endblock %}
+
+{% block heading %}
+<h2>Create</h2>
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+  <form action="{{ url_for('create.create') }}" method="POST" enctype="multipart/form-data" class="boundaryless">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div>
+      <p>Posting as <strong>{{ current_user.handle() }}</strong></p>
+      <p>Post to: <input type="text" name="to" placeholder="{{ current_user.handle() }}"></p>
+      <div>
+        <span class="a11y">Title:</span><input type="text" name="title" placeholder="An interesting title" maxlength="256">
+      </div>
+      <div>
+        <span class="a11y">Text:</span>
+        <textarea name="text" placeholder="What's happening?" class="create_text">{{ request.args['preload'] }}</textarea>
+      </div>
+      {#<dd id="fileInputContainer"><a href="javascript:attachFileInput();">Add a file...</a>#}
+      <div>{{ privacy_select() }}</div>
+      <div><button type="submit" class="primary">Create</button></div>
+    </div>
+  </form>
+</div>
+{% endblock %}

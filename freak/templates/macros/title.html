@@ -1,0 +1,16 @@
+
+{% macro title_tag(name, robots=True) %}
+<title>
+{%- if name -%}
+{{ name }}; on {{ app_name }}
+{%- else -%}
+{{ app_name }}
+{%- endif -%}
+</title>
+{% if robots %}
+<meta name="robots" content="noai,noimageai" />
+{% else %}
+<meta name="robots" content="noindex,nofollow,noai,noimageai" />
+{% endif %}
+
+{% endmacro %}

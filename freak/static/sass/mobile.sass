@@ -1,0 +1,21 @@
+
+@media screen and (max-width: 800px)
+    .content-container
+        display: block
+
+    .content-nav, .content-main
+        width: 100%
+    
+@media screen and (max-width: 960px)
+    .header-username
+        display: none
+        
+    header.header
+        .mini-search-bar
+            display: none
+
+            + a
+                display: inline-block
+
+        ul > li:has(.mini-search-bar)
+            flex: unset

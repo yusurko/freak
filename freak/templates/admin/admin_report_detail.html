@@ -1,0 +1,23 @@
+{% extends "admin/admin_base.html" %}
+{% from "macros/embed.html" import embed_post with context %}
+
+{% block content %}
+<h2>Report detail #{{ report.id }}</h2>
+<ul>
+  <li>Reason: <strong>{{ report_reasons[report.reason_code] }}</strong></li>
+  <li>Status: <strong>{{ ['Unreviewed', 'Complete', 'Rejected', 'On hold'][report.update_status] }}</strong></li>
+</ul>
+
+  <h3>Detail</h3>
+  {% if report.target_type in (1, 2) %}
+    {{ embed_post(report.target()) }}
+  {% else %}
+    <p><i>Unknown media type</i></p>
+  {% endif %}
+  <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <button type="submit" name="do" value="0">Reject</button>
+    <button type="submit" name="do" value="1" class="primary">Remove</button>
+    <button type="submit" name="do" value="2">Put on hold</button>
+  </form>
+{% endblock %}

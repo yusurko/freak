@@ -1,0 +1,11 @@
+
+{% macro icon(name, fill = False) %}
+<i class="icon icon-{{ name }}{{ '_fill' if fill }}"></i>
+{% endmacro %}
+
+{% macro callout(useicon = "spoiler") %}
+<div class="callout">
+  {{ icon(useicon) }}
+  {{ caller() }}
+</div>
+{% endmacro %}

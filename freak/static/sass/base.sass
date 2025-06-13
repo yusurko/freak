@@ -1,0 +1,126 @@
+
+@import "constants.sass"
+
+*
+    box-sizing: border-box
+
+\:root
+    --light-text-primary: #181818
+    --light-text-alt: #444
+    --light-border: #999
+    --light-accent: #ff7300
+    --light-success: #73af00
+    --light-error: #e04433
+    --light-canvas: #eaecee
+    --light-background: #f9f9f9 
+    --light-bg-sharp: #fdfdff
+
+    --dark-text-primary: #e8e8e8
+    --dark-text-alt: #c0cad3
+    --dark-border: #777
+    --dark-accent: #ff7300
+    --dark-success: #93cf00
+    --dark-error: #e04433
+    --dark-canvas: #0a0a0e
+    --dark-background: #181a21 
+    --dark-bg-sharp: #080808
+
+    --text-primary: var(--light-text-primary)
+    --text-alt: var(--light-text-alt)
+    --border: var(--light-border)
+    --accent: var(--light-accent)
+    --success: var(--light-success)
+    --error: var(--light-error)
+    --canvas: var(--light-canvas)
+    --background: var(--light-background)
+    --bg-sharp: var(--light-bg-sharp)
+
+@media (prefers-color-scheme: dark)
+    \:root
+        --text-primary: var(--dark-text-primary)
+        --text-alt: var(--dark-text-alt)
+        --border: var(--dark-border)
+        --accent: var(--dark-accent)
+        --success: var(--dark-success)
+        --error: var(--dark-error)
+        --canvas: var(--dark-canvas)
+        --background: var(--dark-background)
+        --bg-sharp: var(--dark-bg-sharp)
+
+body.color-scheme-light
+    --text-primary: var(--light-text-primary)
+    --text-alt: var(--light-text-alt)
+    --border: var(--light-border)
+    --accent: var(--light-accent)
+    --success: var(--light-success)
+    --error: var(--light-error)
+    --canvas: var(--light-canvas)
+    --background: var(--light-background)
+    --bg-sharp: var(--light-bg-sharp)
+
+body.color-scheme-dark
+    --text-primary: var(--dark-text-primary)
+    --text-alt: var(--dark-text-alt)
+    --border: var(--dark-border)
+    --accent: var(--dark-accent)
+    --success: var(--dark-success)
+    --error: var(--dark-error)
+    --canvas: var(--dark-canvas)
+    --background: var(--dark-background)
+    --bg-sharp: var(--dark-bg-sharp)
+
+
+body, input, select, button
+    font-family: $ui-fonts
+
+body
+    line-height: $ui-line-height
+    font-size: $ui-size
+
+input, button, select
+    font-family: inherit
+    font-size: inherit
+    line-height: inherit
+
+textarea
+    font-family: $monospace-fonts
+
+input:not([type="submit"], [type="button"], [type="reset"]), textarea
+    background: var(--bg-sharp)
+    color: var(--text-main)
+    border: var(--border)
+    border-radius: $corner-radius
+
+body
+    color: var(--text-primary)
+    background-color: var(--canvas)
+
+.card
+    background-color: var(--background)
+    border: var(--canvas) 1px solid
+    border-radius: $corner-radius
+    margin: 12px auto
+    padding: 12px
+    max-width: 960px
+
+.a11y
+    overflow: hidden
+    width: 0
+    height: 0
+    display: inline-block
+
+.centered
+    text-align: center
+    font-size: 110%
+
+a
+    &:link, &:visited
+        color: var(--accent)
+        transition: ease 5s
+
+img
+    max-width: 100%
+    max-height: 100vh
+
+.faint
+    opacity: .75

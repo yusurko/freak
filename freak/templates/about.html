@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "macros/title.html" import title_tag with context %}
+
+{% block title %}{{ title_tag('About') }}{% endblock %}
+
+{% block heading %}
+  <h2>About</h2>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+  <h2>Stats</h2>
+  <ul>
+    <li>No. of posts: <strong>{{ post_count }}</strong></li>
+    <li>No. of active users (posters in the last 30 days): <strong>{{ user_count }}</strong></li>
+  </ul>
+
+  <h2>Software versions</h2>
+  <ul>
+    <li><strong>Python</strong>: {{ python_version }}</strong></li>
+    <li><strong>SQLAlchemy</strong>: {{ sa_version }}</li>
+    <li><strong>Flask</strong>: {{ flask_version }}</li>
+    <li><strong>{{ app_name }}</strong>: {{ app_version }}</li>
+  </ul>
+  
+  <h2>License</h2>
+  <p>Source code is available at: <a href="https://github.com/sakuragasaki46/freak">https://github.com/sakuragasaki46/freak</a></p>
+</div>
+{% endblock %}
+

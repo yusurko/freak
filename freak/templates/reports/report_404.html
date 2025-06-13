@@ -1,0 +1,20 @@
+{% extends "reports/report_base.html" %}
+
+{% block heading %}
+<h1>Not Found</h1>
+
+<p>You can't report a {% if target_type == 2 -%}
+comment
+{%- else -%}
+post
+{%- endif %} which does not exist.</p>
+{% endblock %}
+
+{% block options %}
+<ul>
+  <li>
+    <a href="/">Back to homepage</a>
+  </li>
+</ul>
+{% endblock %}
+

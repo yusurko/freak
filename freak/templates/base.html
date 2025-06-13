@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	{% block title %}
+	<title>{{ app_name }}</title>
+	{% endblock %}
+	<!-- 
+    Copyright (c) 2025 Sakuragasaki46.
+    This Service is available "AS IS", with NO WARRANTY, explicit or implied.
+    Sakuragasaki46 is NOT legally liable for Your use of the Service.
+    This service is age-restricted; do not access if underage.
+    More info: https://{{ domain_name }}/terms
+    -->
+	<meta name="csrf_token" content="{{ csrf_token() }}">
+	<link rel="stylesheet" href="{{ url_for_css('style') }}" />
+	{# psa: icons url MUST be supplied by .env via PRIVATE_ASSETS= #}
+	{% for private_style in private_styles %}
+	<link rel="stylesheet" href="{{ private_style }}" />
+	{% endfor %}
+	<link rel="icon" href="/favicon.ico" />
+	<script src="{{ jquery_url }}"></script>
+  </head>
+  <body>
+	<header class="header">
+	  <h1><a href="/">{{ app_name }}</a></h1>
+	  <div class="metanav">
+		<ul>
+		  {% if not g.no_user %}
+		  <li>
+			<form action="/search" method="POST" class="mini-search-bar">
+				<input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+				<input type="search" name="q" placeholder="Search among {{ post_count }} posts…">
+				<input type="submit" value="Search">
+			</form>
+			<a href="/search">
+			  <i class="icon icon-search"></i><span class="a11y">search</span>
+		  	</a>
+		  </li>
+		  {% endif %}
+		  {% if g.no_user %}
+		  <!-- no user -->
+		  {% elif current_user.is_authenticated %}
+			<li><a href="/create" title="Create a post">
+				<i class="icon icon-add"></i>
+				<span class="a11y">create</span>
+		  </a></li><li><a href="{{ current_user.url() }}"
+						  title="@{{ current_user.username }}'s profile">
+						  <i class="icon icon-profile"></i>
+						  <span class="a11y">profile</span>		   
+		  </a></li><li>
+			<div class="header-username">
+			  <strong class="header-username-name">@{{ current_user.username }}</strong>
+			  <span class="header-username-karma"><i class="icon icon-karma"></i> {{ current_user.karma }} karma</span>
+			</div>
+			</li>
+		  <li><a href="/logout" title="Log out">
+			  <i class="icon icon-logout"></i><span class="a11y">log out</span>
+		  </a></li>
+		  {% else %}
+		  <li><a href="/login" title="Log in">
+				<i class="icon icon-logout"></i>
+				<span class="a11y">log in</span>
+		  </a></li><li><a href="/register" title="Register">
+			  <i class="icon icon-join"></i>
+			  <span class="a11y">register</span>
+			</a></li>
+		  {% endif %}
+		</ul>
+	  </div><!-- .metanav -->
+	</header>
+	<main class="content">
+	  {% for message in get_flashed_messages() %}
+		<div class="flash card">{{ message }}</div>
+      {% endfor %}
+	  {% block body %}
+		<div class="content-header">
+		  {% block heading %}{% endblock %}
+		</div>
+		<div class="content-container">
+          <div class="content-nav">
+			{% block nav %}{% endblock %}
+          </div>
+          <div class="content-main">
+			{% block content %}{% endblock %}
+          </div>
+		</div>
+	  {% endblock %}
+	</main>
+	<footer class="footer">
+	  <p class="copyright">&copy; 2021-2025 Sakuragasaki46.</p>
+	  <ul class="copyright-about">
+		<li><a href="/about">About</a></li>
+		<li><a href="/terms">Terms</a></li>
+		<li><a href="/privacy">Privacy</a></li>
+		<li><a href="https://github.com/sakuragasaki46/freak">GitHub</a></li>
+	  </ul>
+	</footer>
+	<script>
+	  function changeAccentColorTime() {
+        let hours = (new Date).getHours();
+        if (hours < 6 || hours >= 19) {
+		  document.body.style.setProperty('--accent', '#1871d8');
+        } else {
+		  document.body.style.removeProperty('--accent');
+        }
+      }
+      changeAccentColorTime();
+      setInterval(changeAccentColorTime, 300000);
+	</script>
+	<script src="/static/js/lib.js"></script>
+	{% block scripts %}{% endblock %}
+	{% for private_script in private_scripts %}
+	<script src="{{ private_script }}"></script>
+	{% endfor %}
+  </body>
+</html>

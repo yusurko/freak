@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% from "macros/title.html" import title_tag with context %}
+
+{% block title %}{{ title_tag(None) }}{% endblock %}
+
+{% block heading %}
+<h2>Welcome to {{ app_name }}!</h2>
+{% endblock %}
+
+{% block content %}
+<div class="card centered">
+    <p>
+        {{ app_name }} is a social media platform made by people like you.<br />
+        <a href="/login">Log in</a> or <a href="/register">sign up</a> to see {{ post_count }} posts
+        and talk with {{ user_count }} users right now!
+    </p>
+</div>
+{% endblock %}
+
+{% block nav %}
+{% if top_communities %}
+    {% from "macros/nav.html" import nav_top_communities with context %}
+	{{ nav_top_communities(top_communities) }}
+  {% endif %}
+{% endblock %}

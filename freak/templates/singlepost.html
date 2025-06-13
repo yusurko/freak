@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% from "macros/title.html" import title_tag with context %}
+{% from "macros/feed.html" import single_comment, feed_upvote, comment_count with context %}
+{% from "macros/create.html" import comment_area with context %}
+{% from "macros/icon.html" import icon, callout with context %}
+
+{% block title %}{{ title_tag(p.title + '; from ' + p.topic_or_user().handle()) }}{% endblock %}
+
+{% block nav %}
+  {% if p.topic %}
+	{% from "macros/nav.html" import nav_topic with context %}
+	{{ nav_topic(p.topic) }}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <article class="card">
+	<div class="post-frame" id="post-{{ p.id | to_b32l }}">
+	  <div class="post-body">
+		<h1 class="message-title">{{ p.title }}</h1>
+		<div class="message-meta">
+		  Posted by <a href="{{ p.author.url() }}">@{{ p.author.username }}</a>
+		  {% if p.topic %}
+			on <a href="{{ p.topic.url() }}">+{{ p.topic.name }}</a>
+		  {% else %}
+			on their user page
+		  {% endif %}
+		  - <time datetime="{{ p.created_at.isoformat('T') }}">{{ p.created_at.strftime('%B %-d, %Y at %H:%M') }}</time>
+		</div>
+		{% if current_user.is_administrator and p.report_count() %}
+		  {% call callout() %}
+			<strong>{{ p.report_count() }}</strong> reports. <a href="{{ url_for('admin.reports') }}">Take action</a>
+		  {% endcall %}
+		{% endif %}
+		{% if p.is_removed %}
+		  {% call callout('delete') %}
+			This post has been removed
+		  {% endcall %}
+		{% endif %}
+		<div class="message-content">
+		  {{ p.text_content | to_markdown }}
+		</div>
+	  </div>
+	  <div class="message-stats">
+		{{ feed_upvote(p.id, p.upvotes(), p.upvoted_by(current_user)) }}
+		{{ comment_count(p.comments | count) }}
+	  </div>
+	</div>
+	<ul class="message-options inline">
+	  {% if p.author == current_user %}
+		<li><a href="/edit/post/{{ p.id|to_b32l }}"><i class="icon icon-edit"></i> Edit</a></li>
+	  {% else %}
+	  	<li><a href="{{ p.report_url() }}"><i class="icon icon-report"></i> Report</a></li>
+	  {% endif %}
+	</ul>
+	{{ comment_area(p.url()) }}
+	<div class="comment-section">
+	  <ul>
+	  {% for comment in p.top_level_comments() %}
+	  	<li id="comment-{{ comment.id }}" data-endpoint="{{ comment.id|to_b32l }}">
+		  {{ single_comment(comment) }}
+
+		  {# if comment.children %}
+		  {{ comment_tree(comment) }}
+		  {% endif #}
+		</li>
+	  {% endfor %}
+	  </ul>
+	</div>
+  </article>
+{% endblock %}

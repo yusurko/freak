@@ -1,0 +1,19 @@
+{% extends "reports/report_base.html" %}
+
+{% block heading %}
+<h1>Are you confused?</h1>
+
+<p>You can't report your own post or comment. Try editing or deleting.</p>
+{% endblock %}
+
+{% block options %}
+<ul>
+  <li>
+    <a href="{{ back_to_url }}">Back to post</a>
+  </li>
+  <li>
+    <a href="/">Back to homepage</a>
+  </li>
+</ul>
+{% endblock %}
+

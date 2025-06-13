@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% from "macros/title.html" import title_tag with context %}
+{% from "macros/icon.html" import icon, callout with context %}
+
+{% block title %}{{ title_tag('Register', False) }}{% endblock %}
+
+{% block heading %}
+  <h2>Join {{ app_name }}</h2>
+{% endblock %}
+
+{% block content %}
+  <div class="card">
+	<form action="/register" method="POST">
+	  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+	  <div>
+		<label>{{ icon('user') }} Username:</label>
+		<input type="text" class="username-input" name="username" autocomplete="off" data-endpoint="/username_availability/$1"><br />
+	  </div>
+	  <div>
+		<label>{{ icon('user') }} Display name (optional):</label>
+		<input type="text" name="full_name">
+	  </div>
+	  <div>
+		<label>{{ icon('privacy') }} Password:</label>
+		<input type="password" name="password" oncopy="return false"><br />
+		<small class="faint field_desc">Please choose a strong password containing letters, numbers and special characters.</small>
+	  </div>
+	  <div>
+		<label>{{ icon('privacy') }} Confirm password:</label>
+		<input type="password" name="confirm_password" onpaste="return false">
+	  </div>
+	  <div>
+		<label>{{ icon('message') }} Email (optional):</label>
+		<input type="text" name="email"><br />
+		<small class="faint field_desc">A valid email address is required to recover your account.</small>
+	  </div>
+	  <div>
+		<label>{{ icon('calendar') }} Date of birth:</label>
+		<input type="date" name="birthday"><br>
+		<small class="faint field_desc">Your birthday is not shown to anyone. Some age information may be made available for transparency.</small>
+		<!-- You must be 14 years old or older to register on {{ app_name }}.  -->
+	  </div>
+	  {% if not current_user.is_anonymous %}
+		<div>
+		  {% call callout() %}You are currently logged in. Are you sure you want to create another account?{% endcall %}
+		  <input type="checkbox" name="confirm_another" id="cb__confirm_another" value="1">
+		  <label for="cb__confirm_another">Yes, I want to create another account</label>
+		</div>
+	  {% endif %}
+	  <div>
+		<input type="checkbox" name="legal" id="cb__legal" value="1">
+		<label for="cb__legal">I agree to the <a href="/terms">Terms of Service</a>, <a href="/privacy">Privacy Policy</a> and <a href="/rules">Community Guidelines</a></label>
+	  </div>
+	  <div>
+		<button type="submit" class="primary">{{ icon('add') }} Register</button>
+	  </div>
+	</form>
+  </div>
+
+  <p>Already have an account? <a href="/login">Log in</a></p>
+{% endblock %}

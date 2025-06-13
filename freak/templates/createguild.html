@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% from "macros/title.html" import title_tag with context %}
+{% from "macros/create.html" import disabled_if with context %}
+
+{% block title %}
+{{ title_tag('Create a guild', False) }}
+{% endblock %}
+
+{% block heading %}
+<h2>Create a guild</h2>
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+  <form action="{{ url_for('create.createguild') }}" method="POST" enctype="multipart/form-data" class="boundaryless">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div>
+      <p>URL of the guild: <strong>+</strong><input type="text" class="username-input" name="name" required="true" data-endpoint="guild_name_availability/$1" /></p>
+      <p><small class="faint">Must be alphanumeric and unique. <strong>May not be changed later</strong>: choose wisely!</small></p>
+    </div>
+    <div>
+      <p>Display name: <input type="text" name="display_name" placeholder="Guild Name" required="true" /></p>
+      <p><small class="faint">Will be shown in title bar and search engines.</small></p>
+    </div>
+    <div>
+      <p>Description: <small class="faint">(will be shown in sidebar)</small></p>
+      <textarea name="description" placeholder="We do cool stuff"></textarea>
+    </div>
+    <div><button type="submit" class="primary" {{ disabled_if(not current_user.can_create_community()) }}>Create guild</button></div>
+  </form>
+</div>
+
+{% endblock %}

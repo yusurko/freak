@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "macros/feed.html" import feed_post, stop_scrolling, no_more_scrolling with context %}
+{% from "macros/title.html" import title_tag with context %}
+{% from "macros/icon.html" import icon, callout with context %}
+
+{% block title %}{{ title_tag(user.handle() + '’s content') }}{% endblock %}
+{% block heading %}
+  <h2>{{ user.handle() }}</h2>
+  <p>{{ icon('karma') }} <strong>{{ user.karma }}</strong> karma - Joined at: <time datetime="{{ user.joined_at.isoformat('T') }}">{{ user.joined_at.strftime('%B %-d, %Y %H:%M') }}</time> - ID: {{ user.id|to_b32l }}</p>
+{% endblock %}
+
+{% block content %}
+  {% if l and l.pages > 0 %}
+    {% if not user.is_active %}
+	  {% call callout('ban') %}The account {{ user.handle() }} is suspended{% endcall %}
+	{% endif %}
+	<ul class="timeline card">
+	  {% for p in l %}
+		<li id="p_{{ p.id }}">
+		  {{ feed_post(p) }}
+		</li>
+	  {% endfor %}
+	  {% if l.has_next %}
+	    {{ stop_scrolling(l.page) }}
+		{% else %}
+		{{ no_more_scrolling(l.page) }}
+		{% endif %}
+	</ul>
+  {% elif not user.is_active %}
+	<p class="centered">{{ user.handle() }} is suspended</p>
+  {% else %}
+	<p class="centered">{{ user.handle() }} never posted any content</p>
+  {% endif %}
+{% endblock %}
+  

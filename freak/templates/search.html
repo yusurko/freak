@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "macros/title.html" import title_tag with context %}
+{% from "macros/feed.html" import feed_post, stop_scrolling with context %}
+
+{% block title %}{{ title_tag('Search: ' + q if q else 'Search', False) }}{% endblock %}
+
+{% block body %}
+<div class="big-search-bar">
+  <form action="/search" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <input type="search" name="q" placeholder="Search among {{ post_count }} posts…" value="{{ q }}">
+    <input type="submit" value="Search">
+  </form>
+</div>
+
+{% if results %}
+<h2 class="placeholder"><span class="faint">Results for</span> <q>{{ q }}</q></h2>
+
+<ul class="timeline card">
+  {% for p in results %}
+  <li>{{ feed_post(p) }}</li>
+  {% endfor %}
+  {% if results.has_next %}
+  <li>{{ stop_scrolling(results.page) }}</li>
+  {% else %}
+  <li><p class="centered">You have reached the rock bottom</p></li>
+  {% endif %}
+</ul>
+{% elif q %}
+<p class="placeholder">No results for <q>{{ q }}</q></p>
+{% endif %}
+{% endblock %}

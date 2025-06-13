@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% from "macros/title.html" import title_tag with context %}
+{% from "macros/create.html" import privacy_select with context %}
+
+{% block title %}{{ title_tag('Editing: ' + p.title, False) }}{% endblock %}
+
+{% block heading %}
+<h2><span class="faint">Editing:</span> {{ p.title }}</h2>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <form action="{{ url_for('edit.edit_post', id=p.id) }}" method="POST" enctype="multipart/form-data" class="boundaryless">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div>
+      <span class="a11y">Text:</span>
+      <textarea name="text" placeholder="What's happening?" class="create_text">{{ p.text_content }}</textarea></dd>
+    </div>
+      <div>{{ privacy_select(p.privacy) }}</div>
+      <div><input type="submit" value="Save" /></dd>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

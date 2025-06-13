@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% from "macros/title.html" import title_tag with context %}
+
+{% block title %}
+{{ title_tag('WTH!?', false) }}
+{% endblock %}
+
+{% block body %}
+<div class="centered">
+  <h2>Unavailable for Legal Reasons</h2>
+
+  <p>This content is not available in your region because making it available would get us in trouble with the law.</p>
+  <p><a href="/">Back to homepage.</a></p>
+</div>
+{% endblock %}

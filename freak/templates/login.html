@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "macros/title.html" import title_tag with context %}
+{% from "macros/icon.html" import icon with context %}
+
+{% block title %}
+{{ title_tag('Log in', False) }}
+{% endblock %}
+
+{% block heading %}
+  <h2>Log in</h2>
+{% endblock %}
+
+{% block content %}
+  {% if error %}
+	<p class="error"><strong>Error:</strong> {{ error }}</p>
+  {% endif %}
+
+  <div class="card">
+	<form method="POST" action="/login">
+	  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+	  <div>
+		<label>{{ icon('user') }} Username / Email:</label>
+		<input type="text" name="username">
+	  </div>
+	  <div>
+		<label>{{ icon('privacy') }} Password:</label>
+		<input type="password" name="password">
+	  </div>
+	  <div>
+		<label>{{ icon('pin') }} Remember me:</label>
+		<input type="checkbox" name="remember" value="60">
+	  </div>
+	  <div>
+		<button type="submit" class="primary">{{ icon('logout') }} Log in</button>
+	  </div>
+	</form>
+  </div>
+
+  <p>Don’t have an account? <a href="/register">Register</a>.</p>
+{% endblock %}

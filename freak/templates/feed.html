@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% from "macros/feed.html" import feed_post, stop_scrolling, no_more_scrolling with context %}
+{% from "macros/title.html" import title_tag with context %}
+
+{# set feed_title = 'For you' if feed_type == 'foryou' and not feed_title %}
+{% set feed_title = 'Explore' if feed_type == 'explore' and not feed_title #}
+
+
+{% block title %}
+{{ title_tag(feed_title) }}
+{% endblock %}
+
+{% block heading %}
+  <h2>{{ feed_title }}</h2>
+{% endblock %}
+
+{% block nav %}
+  {% if top_communities %}
+    {% from "macros/nav.html" import nav_top_communities with context %}
+	{{ nav_top_communities(top_communities) }}
+  {% endif %}
+
+  {% if feed_type == 'topic' %}
+	{% from "macros/nav.html" import nav_topic with context %}
+	{{ nav_topic(topic) }}
+  {% endif %}
+  
+  <aside class="card">
+	<h3>Don’t miss a post!</h3>
+	<ul>
+	  <li><strong><a id="notificationEnabler" href="#">Enable notifications</a></strong> to continue staying with us 😉</li>
+	</ul>
+  </aside>
+
+{% endblock %}
+
+{% block content %}
+  <ul class="timeline card">
+	{% for p in l %}
+	  <li id="p_{{ p.id }}">
+		{{ feed_post(p) }}
+	  </li>
+	{% endfor %}
+
+	{% if l.has_next %}
+	    {{ stop_scrolling(l.page) }}
+	{% else %}
+		{{ no_more_scrolling(l.page) }}
+	{% endif %}
+  </ul>
+
+  {# TODO: pagination #}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.getElementById('notificationEnabler').onclick = function() {
+    Notification.requestPermission(function(status) {
+      console.log('Notification permission status:', status);
+    });
+  }
+</script>
+{% endblock %}
