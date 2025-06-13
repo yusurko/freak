@@ -3,17 +3,18 @@
 from sqlite3 import ProgrammingError
 import warnings
 from flask import (
-    Flask, abort, flash, g, jsonify, redirect, render_template,
+    Flask, g, redirect, render_template,
     request, send_from_directory, url_for
 )
-import datetime, time, re, os, sys, string, json, html, dotenv
+import os
+import dotenv
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import select
 from werkzeug.routing import BaseConverter
 from sassutils.wsgi import SassMiddleware
 
-__version__ = '0.3.0'
+__version__ = '0.3.1'
 
 APP_BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 

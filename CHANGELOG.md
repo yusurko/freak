@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1
+
+- Fixed a critical bug that prevented database initialization
+
 ## 0.3.0
 
 - Initial commit
@@ -11,7 +15,7 @@
 - Admins can remove reported posts
 - Upvotes and downvotes
 
-## 0.2.0 and earlier
+## 0.2 and earlier
 
 *Releases before 0.3.0 are lost for good, and for a good reason.*
 
