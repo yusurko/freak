@@ -3,6 +3,8 @@
 import argparse
 import os
 import subprocess
+
+from sqlalchemy import create_engine
 from . import __version__ as version
 from .models import db
 
@@ -15,7 +17,7 @@ def make_parser():
 def main():
     args = make_parser().parse_args()
     if args.upgrade:
-        db.metadata.create_all()
+        db.metadata.create_all(create_engine(os.getenv('DATABASE_URL')))
         subprocess.Popen(['alembic', 'upgrade', 'head']).wait()
         print('Schema upgraded!')
 
