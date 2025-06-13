@@ -83,7 +83,7 @@ PostUpvote = Table(
     Base.metadata,
     Column('post_id', BigInteger, ForeignKey('freak_post.id'), primary_key=True),
     Column('voter_id', BigInteger, ForeignKey('freak_user.id'), primary_key=True),
-    Column('is_downvote', Boolean, server_default=text('0'))
+    Column('is_downvote', Boolean, server_default=text('false'))
 )
 
 class User(BaseModel):
@@ -98,8 +98,8 @@ class User(BaseModel):
     gdpr_birthday = Column(Date, nullable=False)
     joined_at = Column(DateTime, server_default=func.current_timestamp(), nullable=False)
     joined_ip = Column(String(64), default=get_remote_addr, nullable=False)
-    is_administrator = Column(Boolean, server_default=text('0'), nullable=False)
-    is_disabled_by_user = Column(Boolean, server_default=text('0'), nullable=False)
+    is_administrator = Column(Boolean, server_default=text('false'), nullable=False)
+    is_disabled_by_user = Column(Boolean, server_default=text('false'), nullable=False)
     karma = Column(BigInteger, server_default=text('0'), nullable=False)
     legacy_id = Column(BigInteger, nullable=True)
     # TODO add pronouns and biography (upcoming 0.4)
