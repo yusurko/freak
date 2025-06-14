@@ -63,6 +63,7 @@ PRIVATE_ASSETS = os.getenv('PRIVATE_ASSETS', '').split()
 def _inject_variables():
     return {
         'app_name': os.getenv('APP_NAME'),
+        'app_version': __version__,
         'domain_name': os.getenv('DOMAIN_NAME'),
         'url_for_css': (lambda name, **kwargs: url_for('static', filename=f'css/{name}.css', **kwargs)),
         'private_scripts': [x for x in PRIVATE_ASSETS if x.endswith('.js')],
