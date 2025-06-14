@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.2
+
+- Fixed administrator users not being able to create +guilds
+
 ## 0.3.1
 
 - Fixed a critical bug that prevented database initialization

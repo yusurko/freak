@@ -163,8 +163,11 @@ class User(BaseModel):
             db.session.execute(update(User).where(User.id == self.id).values(karma = self.karma + points))
             db.session.commit()
 
-    def can_create_community(self):
-        return self.karma > 15
+    def can_create_guild(self):
+        return self.karma > 15 or self.is_administrator
+
+    ## deprecated alias!
+    can_create_community = can_create_guild
 
     def handle(self):
         return f'@{self.username}'

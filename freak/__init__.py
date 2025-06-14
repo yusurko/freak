@@ -14,7 +14,7 @@ from sqlalchemy import select
 from werkzeug.routing import BaseConverter
 from sassutils.wsgi import SassMiddleware
 
-__version__ = '0.3.1'
+__version__ = '0.3.2'
 
 APP_BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
