@@ -8,8 +8,8 @@
 
 {% block nav %}
   {% if p.topic %}
-	{% from "macros/nav.html" import nav_topic with context %}
-	{{ nav_topic(p.topic) }}
+	{% from "macros/nav.html" import nav_guild with context %}
+	{{ nav_guild(p.topic) }}
   {% endif %}
 {% endblock %}
 
