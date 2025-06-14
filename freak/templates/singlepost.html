@@ -5,7 +5,14 @@
 {% from "macros/icon.html" import icon, callout with context %}
 {% from "macros/nav.html" import nav_guild, nav_user with context %}
 
-{% block title %}{{ title_tag(p.title + '; from ' + p.topic_or_user().handle()) }}{% endblock %}
+{% block title %}
+{{ title_tag(p.title + '; from ' + p.topic_or_user().handle()) }}
+<meta name="og:title" content="{{ p.title }}" />
+{# meta name="og:description" coming in 0.4 #}
+{% if p.author %}
+<meta name="author" content="{{ p.author.display_name or p.author.username }}" />
+{% endif %}
+{% endblock %}
 
 {% block nav %}
   {% if p.topic %}

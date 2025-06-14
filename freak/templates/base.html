@@ -14,6 +14,8 @@
     This service is age-restricted; do not access if underage.
     More info: https://{{ domain_name }}/terms
     -->
+	<meta name="og:site_name" content="{{ app_name }}" />
+	<meta name="generator" content="{{ app_name }} {{ app_version }}" />
 	<meta name="csrf_token" content="{{ csrf_token() }}">
 	<link rel="stylesheet" href="{{ url_for_css('style') }}" />
 	{# psa: icons url MUST be supplied by .env via PRIVATE_ASSETS= #}

@@ -4,6 +4,7 @@
 
 - Fixed bugs in templates introduced in 0.3.2
 - Improved karma management
+- Fixed og: meta tags missing 
 
 ## 0.3.2
 
