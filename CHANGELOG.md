@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.3
+
+- Fixed bugs in templates introduced in 0.3.2
+- Improved karma management
+
 ## 0.3.2
 
 - Fixed administrator users not being able to create +guilds

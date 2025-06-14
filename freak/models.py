@@ -188,6 +188,14 @@ class User(BaseModel):
     def not_suspended(cls):
         return or_(User.banned_at == None, User.banned_until <= datetime.datetime.now())
 
+    def recompute_karma(self):
+        c = 0
+        c += db.session.execute(select(func.count('*')).select_from(Post).where(Post.author == self)).scalar()
+        c += db.session.execute(select(func.count('*')).select_from(PostUpvote).join(Post).where(Post.author == self, PostUpvote.c.is_downvote == False)).scalar()
+        c -= db.session.execute(select(func.count('*')).select_from(PostUpvote).join(Post).where(Post.author == self, PostUpvote.c.is_downvote == True)).scalar()
+
+        self.karma = c
+
 class Topic(BaseModel):
     __tablename__ = 'freak_topic'
 
