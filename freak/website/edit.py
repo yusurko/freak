@@ -4,6 +4,7 @@
 import datetime
 from flask import Blueprint, abort, flash, redirect, render_template, request
 from flask_login import current_user, login_required
+from sqlalchemy import select
 
 from ..models import Post, db
 
@@ -13,7 +14,7 @@ bp = Blueprint('edit', __name__)
 @bp.route('/edit/post/<b32l:id>', methods=['GET', 'POST'])
 @login_required
 def edit_post(id):
-    p: Post | None = db.session.execute(db.select(Post).where(Post.id == id)).scalar()
+    p: Post | None = db.session.execute(select(Post).where(Post.id == id)).scalar()
 
     if p is None:
         abort(404)

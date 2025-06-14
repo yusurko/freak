@@ -5,7 +5,7 @@
 	<ul>
 	  <li><i class="icon icon-info" style="font-size:inherit"></i> {{ gu.description }}</li>
 	  <li>
-		<strong>{{ topic.posts | count }}</strong> posts -
+		<strong>{{ gu.posts | count }}</strong> posts -
 		<strong>-</strong> subscribers
 	  </li>
 	</ul>
@@ -16,7 +16,7 @@
   <aside class="card">
     <h3>About <a href="{{ user.url() }}">{{ user.handle() }}</a></h3>
 	<ul>
-	  <li>{# user.biography #}</li>
+	  {# <li> TODO user.biography </li> #}
 	</ul>
   </aside>
 {% endmacro %}
