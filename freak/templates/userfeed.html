@@ -2,11 +2,17 @@
 {% from "macros/feed.html" import feed_post, stop_scrolling, no_more_scrolling with context %}
 {% from "macros/title.html" import title_tag with context %}
 {% from "macros/icon.html" import icon, callout with context %}
+{% from "macros/nav.html" import nav_user with context %}
 
 {% block title %}{{ title_tag(user.handle() + '’s content') }}{% endblock %}
+
 {% block heading %}
   <h2>{{ user.handle() }}</h2>
   <p>{{ icon('karma') }} <strong>{{ user.karma }}</strong> karma - Joined at: <time datetime="{{ user.joined_at.isoformat('T') }}">{{ user.joined_at.strftime('%B %-d, %Y %H:%M') }}</time> - ID: {{ user.id|to_b32l }}</p>
+{% endblock %}
+
+{% block nav %}
+  {{ user_nav(user) }}
 {% endblock %}
 
 {% block content %}

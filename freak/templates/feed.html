@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% from "macros/feed.html" import feed_post, stop_scrolling, no_more_scrolling with context %}
 {% from "macros/title.html" import title_tag with context %}
+{% from "macros/nav.html" import nav_guild, nav_top_communities with context %}
 
 {# set feed_title = 'For you' if feed_type == 'foryou' and not feed_title %}
 {% set feed_title = 'Explore' if feed_type == 'explore' and not feed_title #}
@@ -16,12 +17,10 @@
 
 {% block nav %}
   {% if top_communities %}
-    {% from "macros/nav.html" import nav_top_communities with context %}
-	{{ nav_top_communities(top_communities) }}
+    {{ nav_top_communities(top_communities) }}
   {% endif %}
 
   {% if feed_type == 'guild' %}
-	{% from "macros/nav.html" import nav_guild with context %}
 	{{ nav_guild(topic) }}
   {% endif %}
   

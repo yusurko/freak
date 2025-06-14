@@ -3,13 +3,15 @@
 {% from "macros/feed.html" import single_comment, feed_upvote, comment_count with context %}
 {% from "macros/create.html" import comment_area with context %}
 {% from "macros/icon.html" import icon, callout with context %}
+{% from "macros/nav.html" import nav_guild, nav_user with context %}
 
 {% block title %}{{ title_tag(p.title + '; from ' + p.topic_or_user().handle()) }}{% endblock %}
 
 {% block nav %}
   {% if p.topic %}
-	{% from "macros/nav.html" import nav_guild with context %}
 	{{ nav_guild(p.topic) }}
+  {% elif p.author %}
+    {{ nav_user(p.author) }}
   {% endif %}
 {% endblock %}
 
@@ -26,6 +28,9 @@
 			on their user page
 		  {% endif %}
 		  - <time datetime="{{ p.created_at.isoformat('T') }}">{{ p.created_at.strftime('%B %-d, %Y at %H:%M') }}</time>
+		  {% if p.privacy == 1 %}
+		  - {{ icon('link_post') }} Unlisted
+		  {% endif %}
 		</div>
 		{% if current_user.is_administrator and p.report_count() %}
 		  {% call callout() %}

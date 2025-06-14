@@ -18,7 +18,8 @@ __version__ = '0.3.3'
 
 APP_BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-dotenv.load_dotenv()
+if not dotenv.load_dotenv():
+    warnings.warn('.env not loaded; application may break!', UserWarning)
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')
