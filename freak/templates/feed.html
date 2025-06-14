@@ -20,8 +20,8 @@
 	{{ nav_top_communities(top_communities) }}
   {% endif %}
 
-  {% if feed_type == 'topic' %}
-	{% from "macros/nav.html" import nav_topic with context %}
+  {% if feed_type == 'guild' %}
+	{% from "macros/nav.html" import nav_guild with context %}
 	{{ nav_topic(topic) }}
   {% endif %}
   

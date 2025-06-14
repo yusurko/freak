@@ -1,5 +1,7 @@
+
 from flask import Blueprint, render_template, redirect, abort, request
 from flask_login import current_user
+from sqlalchemy import select
 
 from ..search import SearchQuery
 from ..models import Post, db, Topic
@@ -31,7 +33,7 @@ def explore():
 
 @bp.route('/+<name>/')
 def topic_feed(name):
-    topic: Topic = db.session.execute(db.select(Topic).where(Topic.name == name)).scalar()
+    topic: Topic | None = db.session.execute(select(Topic).where(Topic.name == name)).scalar()
 
     if topic is None:
         abort(404)
@@ -39,7 +41,7 @@ def topic_feed(name):
     posts = db.paginate(topic_timeline(name))
 
     return render_template(
-        'feed.html', feed_type='topic', feed_title=f'{topic.display_name} (+{topic.name})', l=posts, topic=topic)
+        'feed.html', feed_type='guild', feed_title=f'{topic.display_name} (+{topic.name})', l=posts, topic=topic)
 
 @bp.route('/r/<name>/')
 def topic_feed_r(name):

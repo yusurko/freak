@@ -5,10 +5,11 @@
     box-sizing: border-box
 
 \:root
+    --accent: #ff7300
+
     --light-text-primary: #181818
     --light-text-alt: #444
     --light-border: #999
-    --light-accent: #ff7300
     --light-success: #73af00
     --light-error: #e04433
     --light-canvas: #eaecee
@@ -18,17 +19,19 @@
     --dark-text-primary: #e8e8e8
     --dark-text-alt: #c0cad3
     --dark-border: #777
-    --dark-accent: #ff7300
     --dark-success: #93cf00
     --dark-error: #e04433
     --dark-canvas: #0a0a0e
     --dark-background: #181a21 
     --dark-bg-sharp: #080808
 
+    // the following are DEPRECATED //
+    --light-accent: var(--accent)
+    --dark-accent: var(--accent)
+
     --text-primary: var(--light-text-primary)
     --text-alt: var(--light-text-alt)
     --border: var(--light-border)
-    --accent: var(--light-accent)
     --success: var(--light-success)
     --error: var(--light-error)
     --canvas: var(--light-canvas)
@@ -40,7 +43,6 @@
         --text-primary: var(--dark-text-primary)
         --text-alt: var(--dark-text-alt)
         --border: var(--dark-border)
-        --accent: var(--dark-accent)
         --success: var(--dark-success)
         --error: var(--dark-error)
         --canvas: var(--dark-canvas)
@@ -51,7 +53,6 @@ body.color-scheme-light
     --text-primary: var(--light-text-primary)
     --text-alt: var(--light-text-alt)
     --border: var(--light-border)
-    --accent: var(--light-accent)
     --success: var(--light-success)
     --error: var(--light-error)
     --canvas: var(--light-canvas)
@@ -62,7 +63,6 @@ body.color-scheme-dark
     --text-primary: var(--dark-text-primary)
     --text-alt: var(--dark-text-alt)
     --border: var(--dark-border)
-    --accent: var(--dark-accent)
     --success: var(--dark-success)
     --error: var(--dark-error)
     --canvas: var(--dark-canvas)

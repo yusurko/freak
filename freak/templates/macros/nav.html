@@ -1,9 +1,9 @@
 
-{% macro nav_topic(topic) %}
+{% macro nav_guild(gu) %}
   <aside class="card">
-	<h3>About {{ topic.handle() }}</h3>
+	<h3>About <a href="{{ gu.url() }}">{{ gu.handle() }}</a></h3>
 	<ul>
-	  <li><i class="icon icon-info" style="font-size:inherit"></i> {{ topic.description }}</li>
+	  <li><i class="icon icon-info" style="font-size:inherit"></i> {{ gu.description }}</li>
 	  <li>
 		<strong>{{ topic.posts | count }}</strong> posts -
 		<strong>-</strong> subscribers
@@ -14,7 +14,7 @@
 
 {% macro nav_user(user) %}
   <aside class="card">
-    <h3>About {{ user.handle() }}</h3>
+    <h3>About <a href="{{ user.url() }}">{{ user.handle() }}</a></h3>
 	<ul>
 	  <li>{# user.biography #}</li>
 	</ul>
