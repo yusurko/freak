@@ -14,9 +14,11 @@
 
 {% macro nav_user(user) %}
   <aside class="card">
-    <h3>About <a href="{{ user.url() }}">{{ user.handle() }}</a></h3>
+    <h3>About <a href="{{ user.url() }}">{{ user.display_name or user.handle() }}</a></h3>
 	<ul>
-	  {# <li> TODO user.biography </li> #}
+	{% if user.biography %}
+	  <li>{{ icon('info') }} {{ user.biography }}</li>
+	  {% endif %}
 	</ul>
   </aside>
 {% endmacro %}

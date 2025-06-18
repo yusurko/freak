@@ -3,11 +3,13 @@
 import datetime
 from functools import wraps
 from typing import Callable
+import warnings
 from flask import Blueprint, abort, redirect, render_template, request, url_for
 from flask_login import current_user
-from sqlalchemy import select, update
+from sqlalchemy import insert, select, update
+from suou import additem, not_implemented
 
-from ..models import REPORT_REASON_STRINGS, REPORT_UPDATE_COMPLETE, REPORT_UPDATE_ON_HOLD, REPORT_UPDATE_REJECTED, Comment, Post, PostReport, User, db
+from ..models import REPORT_REASON_STRINGS, REPORT_TARGET_COMMENT, REPORT_TARGET_POST, REPORT_UPDATE_COMPLETE, REPORT_UPDATE_ON_HOLD, REPORT_UPDATE_REJECTED, Comment, Post, PostReport, User, UserStrike, db
 
 bp = Blueprint('admin', __name__)
 
@@ -22,36 +24,96 @@ def admin_required(func: Callable):
         return func(**ka)
     return wrapper
 
-def accept_report(target, source: PostReport):
+
+TARGET_TYPES = {
+    Post: REPORT_TARGET_POST,
+    Comment: REPORT_TARGET_COMMENT
+}
+
+def remove_content(target, reason_code: int):
     if isinstance(target, Post):
         target.removed_at = datetime.datetime.now()
         target.removed_by_id = current_user.id
-        target.removed_reason = source.reason_code
+        target.removed_reason = reason_code
     elif isinstance(target, Comment):
         target.removed_at = datetime.datetime.now()
         target.removed_by_id = current_user.id
-        target.removed_reason = source.reason_code
+        target.removed_reason = reason_code
     db.session.add(target)
+
+def get_author(target) -> User | None:
+    if isinstance(target, (Post, Comment)):
+        return target.author
+    return None
+
+def get_content(target) -> str | None:
+    if isinstance(target, Post):
+        return target.title + '\n\n' + target.text_content
+    elif isinstance(target, Comment):
+        return target.text_content
+    return None
+
+## REPORT ACTIONS ##
+
+REPORT_ACTIONS = {}
+
+@additem(REPORT_ACTIONS, '1')
+def accept_report(target, source: PostReport):
+    if source.is_critical():
+        warnings.warn('attempted remove on a critical report case, striking instead', UserWarning)
+        return strike_report(target, source)
+
+    remove_content(target, source.reason_code)
 
     source.update_status = REPORT_UPDATE_COMPLETE
     db.session.add(source)
     db.session.commit()
 
+
+@additem(REPORT_ACTIONS, '2')
+def strike_report(target, source: PostReport):
+    remove_content(target, source.reason_code)
+
+    author = get_author(target)
+    if author:
+        db.session.execute(insert(UserStrike).values(
+            user_id = author.id,
+            target_type = TARGET_TYPES[type(target)],
+            target_id = target.id,
+            target_content = get_content(target),
+            reason_code = source.reason_code,
+            issued_by_id = current_user.id
+        ))
+
+        if source.is_critical():
+            author.banned_at = datetime.datetime.now()
+            author.banned_reason = source.reason_code
+
+    source.update_status = REPORT_UPDATE_COMPLETE
+    db.session.add(source)
+    db.session.commit()
+
+
+@additem(REPORT_ACTIONS, '0')
 def reject_report(target, source: PostReport):
     source.update_status = REPORT_UPDATE_REJECTED
     db.session.add(source)
     db.session.commit()
 
+
+@additem(REPORT_ACTIONS, '3')
 def withhold_report(target, source: PostReport):
     source.update_status = REPORT_UPDATE_ON_HOLD
     db.session.add(source)
     db.session.commit()
 
-REPORT_ACTIONS = {
-    '1': accept_report,
-    '0': reject_report,
-    '2': withhold_report
-}
+
+@additem(REPORT_ACTIONS, '4')
+@not_implemented()
+def escalate_report(target, source: PostReport):
+    ...
+
+## END report actions
 
 @bp.route('/admin/')
 @admin_required
@@ -77,3 +139,10 @@ def report_detail(id: int):
         return redirect(url_for('admin.reports'))
     return render_template('admin/admin_report_detail.html', report=report,
         report_reasons=REPORT_REASON_STRINGS)
+
+@bp.route('/admin/strikes/')
+@admin_required
+def strikes():
+    strike_list = db.paginate(select(UserStrike).order_by(UserStrike.id.desc()))
+    return render_template('admin/admin_strikes.html',
+    strike_list=strike_list, report_reasons=REPORT_REASON_STRINGS)

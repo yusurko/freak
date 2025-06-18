@@ -4,8 +4,8 @@
 	<div class="message-meta">Posted by <a href="{{ p.author.url() }}">@{{ p.author.username }}</a>
 	  {% if p.parent_post %}
 	    as a comment on <a href="{{ p.parent_post.url() }}">post “{{ p.parent_post.title }}”</a>
-	  {% elif p.topic %}
-		on <a href="{{ p.topic.url() }}">+{{ p.topic.name }}</a>
+	  {% elif p.guild %}
+		on <a href="{{ p.guild.url() }}">{{ p.guild.handle() }}</a>
 	  {% else %}
 		on their user page
 	  {% endif %}

@@ -4,6 +4,7 @@
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	{% from "macros/icon.html" import icon with context %}
 	{% block title %}
 	<title>{{ app_name }}</title>
 	{% endblock %}
@@ -25,7 +26,7 @@
 	<link rel="icon" href="/favicon.ico" />
 	<script src="{{ jquery_url }}"></script>
   </head>
-  <body>
+  <body {% if current_user.color_theme %} class="{{ theme_classes(current_user.color_theme) }}"{% endif %}>
 	<header class="header">
 	  <h1><a href="/">{{ app_name }}</a></h1>
 	  <div class="metanav">
@@ -45,30 +46,28 @@
 		  {% if g.no_user %}
 		  <!-- no user -->
 		  {% elif current_user.is_authenticated %}
-			<li><a href="/create" title="Create a post">
+		    <li>
+			  <a class="round border-accent" href="/create" title="Create a post">
 				<i class="icon icon-add"></i>
 				<span class="a11y">create</span>
-		  </a></li><li><a href="{{ current_user.url() }}"
-						  title="@{{ current_user.username }}'s profile">
-						  <i class="icon icon-profile"></i>
-						  <span class="a11y">profile</span>		   
-		  </a></li><li>
+				<span class="nomobile">New post</span>
+		      </a>
+		    </li>
+		    <li><a href="{{ current_user.url() }}" title="{{ current_user.handle() }}'s profile">{{ icon('profile')}}<span class="a11y">profile</span></a>
 			<div class="header-username">
-			  <strong class="header-username-name">@{{ current_user.username }}</strong>
-			  <span class="header-username-karma"><i class="icon icon-karma"></i> {{ current_user.karma }} karma</span>
-			</div>
-			</li>
+			  <strong class="header-username-name">{{ current_user.handle() }}</strong>
+			  <span class="header-username-karma">{{ icon('karma') }} {{ current_user.karma }} karma</span>
+			</div></li>
 		  <li><a href="/logout" title="Log out">
-			  <i class="icon icon-logout"></i><span class="a11y">log out</span>
+			  {{ icon('logout') }} <span class="a11y">log out</span>
 		  </a></li>
 		  {% else %}
 		  <li><a href="/login" title="Log in">
-				<i class="icon icon-logout"></i>
-				<span class="a11y">log in</span>
-		  </a></li><li><a href="/register" title="Register">
-			  <i class="icon icon-join"></i>
-			  <span class="a11y">register</span>
-			</a></li>
+			  {{ icon('logout') }}<span class="a11y">log in</span>
+		  </a></li>
+		  <li><a href="/register" title="Register">
+			  {{ icon('join') }}<span class="a11y">register</span>
+		  </a></li>
 		  {% endif %}
 		</ul>
 	  </div><!-- .metanav -->
@@ -104,9 +103,9 @@
 	  function changeAccentColorTime() {
         let hours = (new Date).getHours();
         if (hours < 6 || hours >= 19) {
-		  document.body.style.setProperty('--accent', '#1871d8');
+		  document.body.classList.add('night');
         } else {
-		  document.body.style.removeProperty('--accent');
+		  document.body.classList.remove('night');
         }
       }
       changeAccentColorTime();

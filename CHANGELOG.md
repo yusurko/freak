@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0
+
+- Added dependency to [SUOU](https://github.com/sakuragasaki46/suou)
+- Added user strikes, memberships and user blocks
+- Added ✨color themes✨
+- Users can now set their display name and biography in `/settings`
+
 ## 0.3.3
 
 - Fixed bugs in templates introduced in 0.3.2

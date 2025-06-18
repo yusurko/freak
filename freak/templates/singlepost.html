@@ -15,8 +15,8 @@
 {% endblock %}
 
 {% block nav %}
-  {% if p.topic %}
-	{{ nav_guild(p.topic) }}
+  {% if p.guild %}
+	{{ nav_guild(p.guild) }}
   {% elif p.author %}
     {{ nav_user(p.author) }}
   {% endif %}
@@ -29,8 +29,8 @@
 		<h1 class="message-title">{{ p.title }}</h1>
 		<div class="message-meta">
 		  Posted by <a href="{{ p.author.url() }}">@{{ p.author.username }}</a>
-		  {% if p.topic %}
-			on <a href="{{ p.topic.url() }}">+{{ p.topic.name }}</a>
+		  {% if p.guild %}
+			on <a href="{{ p.guild.url() }}">+{{ p.guild.name }}</a>
 		  {% else %}
 			on their user page
 		  {% endif %}

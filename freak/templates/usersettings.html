@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from "macros/title.html" import title_tag with context %}
+{% from "macros/create.html" import checked_if with context %}
+
+{% block title %}{{ title_tag('User Settings') }}{% endblock %}
+
+{% block heading %}
+<h1>Settings for {{ current_user.handle() }}</h1>
+{% endblock %}
+
+{% block content %}
+<form method="POST">
+ <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+<section class="card">
+  <h2>Identification</h2>
+    <div><label for="US__display_name">Full name:</label>
+      <input type="text" name="display_name" id="US__display_name" value="{{ current_user.display_name or '' }}" />
+      
+    </div>
+    <div><label for="US__biography">Bio:</label>
+      <textarea name="biography" id="US__biography">{{ current_user.biography or '' }}</textarea>
+      
+    </div>
+    <div>
+      <button type="submit" class="primary">Save</button>
+    </div>
+  </section>
+  <section class="card">
+  <h2>Appearance</h2>
+  <div>
+      <label>Color scheme</label>
+      <ul class="apply-theme">
+        <li><input type="radio" id="US__color_scheme_dark" name="color_scheme" value="dark" {{ checked_if((current_user.color_theme // 256) == 2) }}><label for="US__color_scheme_dark">Dark</label></li>
+        <li><input type="radio" id="US__color_scheme_light" name="color_scheme" value="light" {{ checked_if((current_user.color_theme // 256) == 1) }}><label for="US__color_scheme_light">Light</label></li>
+        <li><input type="radio" id="US__color_scheme_unset" name="color_scheme" value="unset" {{ checked_if((current_user.color_theme // 256) == 0) }}><label for="US__color_scheme_unset">System</label></li>
+      </ul>
+    </div>
+    <div>
+      <label>Color theme</label>
+      <ul class="apply-theme">
+      {% for color in colors %}
+        <li><input type="radio" id="US__color_theme_{{ color.code }}" name="color_theme" value="{{ color.code }}" {{ checked_if((current_user.color_theme % 256) == color.code) }}><label for="US__color_theme_{{ color.code }}">{{ color.name }}</label></li>
+      {% endfor %}
+      </ul>
+      <p><small class="faint">Don't forget to save your changes to apply the theme!</small></p>
+    </div><div>
+      <button type="submit" class="primary">Save</button>
+    </div>
+  </form>
+</section>
+</form>
+{% endblock %}

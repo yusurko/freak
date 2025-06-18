@@ -7,7 +7,8 @@ AJAX hooks for the website.
 
 import re
 from flask import Blueprint, request
-from .models import Topic, db, User, Post, PostUpvote
+from sqlalchemy import delete, insert, select
+from .models import Guild, db, User, Post, PostUpvote
 from flask_login import current_user, login_required
 
 bp = Blueprint('ajax', __name__)
@@ -18,7 +19,7 @@ def username_availability(username: str):
     is_valid = re.fullmatch('[a-z0-9_-]+', username) is not None
 
     if is_valid:
-        user = db.session.execute(db.select(User).where(User.username == username)).scalar()
+        user = db.session.execute(select(User).where(User.username == username)).scalar()
 
         is_available = user is None or user == current_user
     else:
@@ -32,10 +33,10 @@ def username_availability(username: str):
 
 @bp.route('/guild_name_availability/<username>')
 def guild_name_availability(name: str):
-    is_valid = re.fullmatch('[a-z0-9_-]+', username) is not None
+    is_valid = re.fullmatch('[a-z0-9_-]+', name) is not None
 
     if is_valid:
-        gd = db.session.execute(db.select(Topic).where(Topic.name == name)).scalar()
+        gd = db.session.execute(select(Guild).where(Guild.name == name)).scalar()
 
         is_available = gd is None
     else:
@@ -51,19 +52,19 @@ def guild_name_availability(name: str):
 @login_required
 def post_upvote(id):
     o = request.form['o']
-    p: Post | None = db.session.execute(db.select(Post).where(Post.id == id)).scalar()
+    p: Post | None = db.session.execute(select(Post).where(Post.id == id)).scalar()
 
     if p is None:
         return { 'status': 'fail', 'message': 'Post not found' }, 404
     
     if o == '1':
-        db.session.execute(db.delete(PostUpvote).where(PostUpvote.c.post_id == p.id, PostUpvote.c.voter_id == current_user.id, PostUpvote.c.is_downvote == True))
-        db.session.execute(db.insert(PostUpvote).values(post_id = p.id, voter_id = current_user.id, is_downvote = False))
+        db.session.execute(delete(PostUpvote).where(PostUpvote.c.post_id == p.id, PostUpvote.c.voter_id == current_user.id, PostUpvote.c.is_downvote == True))
+        db.session.execute(insert(PostUpvote).values(post_id = p.id, voter_id = current_user.id, is_downvote = False))
     elif o == '0':
-        db.session.execute(db.delete(PostUpvote).where(PostUpvote.c.post_id == p.id, PostUpvote.c.voter_id == current_user.id))
+        db.session.execute(delete(PostUpvote).where(PostUpvote.c.post_id == p.id, PostUpvote.c.voter_id == current_user.id))
     elif o == '-1':
-        db.session.execute(db.delete(PostUpvote).where(PostUpvote.c.post_id == p.id, PostUpvote.c.voter_id == current_user.id, PostUpvote.c.is_downvote == False))
-        db.session.execute(db.insert(PostUpvote).values(post_id = p.id, voter_id = current_user.id, is_downvote = True))
+        db.session.execute(delete(PostUpvote).where(PostUpvote.c.post_id == p.id, PostUpvote.c.voter_id == current_user.id, PostUpvote.c.is_downvote == False))
+        db.session.execute(insert(PostUpvote).values(post_id = p.id, voter_id = current_user.id, is_downvote = True))
     else:
         return { 'status': 'fail', 'message': 'Invalid score' }, 400
 

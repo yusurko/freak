@@ -21,8 +21,12 @@ def main():
 
     engine = create_engine(os.getenv('DATABASE_URL'))
     if args.upgrade:
+        ret_code = subprocess.Popen(['alembic', 'upgrade', 'head']).wait()
+        if ret_code != 0:
+            print(f'Schema upgrade failed (code: {ret_code})')
+            exit(ret_code)
+        # if the alembic/versions folder is empty
         db.metadata.create_all(engine)
-        subprocess.Popen(['alembic', 'upgrade', 'head']).wait()
         print('Schema upgraded!')
 
     if args.flush:

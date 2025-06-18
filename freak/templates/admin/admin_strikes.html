@@ -1,0 +1,21 @@
+{% extends "admin/admin_base.html" %}
+{% from "macros/feed.html" import stop_scrolling, no_more_scrolling with context %}
+
+{% block content %}
+  <ul>
+  {% for strike in strike_list %}
+    <li>
+      <p><strong>#{{ strike.id }}</strong> to {{ strike.user.handle() }}</p>
+      <ul class="inline">
+      <li>Reason: <strong>{{ report_reasons[strike.reason_code] }}</strong></li>
+      <!-- you might not want to see why -->
+      </ul>
+    </li>
+  {% endfor %}
+  {% if strike_list.has_next %}
+    {{ stop_scrolling(strike_list.page) }}
+  {% else %}
+    {{ no_more_scrolling(strike_list.page) }}
+  {% endif %}
+  </ul>
+{% endblock %}

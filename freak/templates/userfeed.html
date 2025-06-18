@@ -8,11 +8,18 @@
 
 {% block heading %}
   <h2>{{ user.handle() }}</h2>
-  <p>{{ icon('karma') }} <strong>{{ user.karma }}</strong> karma - Joined at: <time datetime="{{ user.joined_at.isoformat('T') }}">{{ user.joined_at.strftime('%B %-d, %Y %H:%M') }}</time> - ID: {{ user.id|to_b32l }}</p>
+  <ul class="inline">
+    <li>{{ icon('karma') }} <strong>{{ user.karma }}</strong> karma</li>
+	<li>Joined at: <time datetime="{{ user.joined_at.isoformat('T') }}">{{ user.joined_at.strftime('%B %-d, %Y %H:%M') }}</time></li>
+	<li>ID: {{ user.id|to_b32l }}</li>
+  </ul>
 {% endblock %}
 
 {% block nav %}
   {{ nav_user(user) }}
+  {% if user == current_user %}
+  <a href="/settings"><button class="card">{{ icon('settings') }} Settings</button></a>
+  {% endif %}
 {% endblock %}
 
 {% block content %}

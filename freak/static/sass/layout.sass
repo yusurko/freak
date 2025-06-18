@@ -54,6 +54,11 @@ header.header
 
         &, > ul, > ul > li:has(.mini-search-bar)
             flex: 1
+
+        ul > li span
+            color: var(--text-primary)
+            font-size: .6em
+
     .header-username
         > *
             display: block
@@ -135,6 +140,7 @@ ul.inline
     list-style: none
     padding: 0
     margin: 0
+    display: inline
     > li
         display: inline
         &::before
@@ -143,6 +149,22 @@ ul.inline
         &:first-child::before
             content: ''
             margin: 0
+
+ul.grid
+    list-style: none
+    padding: 0
+    display: grid
+    grid-template-columns: 1fr 1fr 1fr 1fr
+    grid-template-rows: auto
+    > li
+        border: 1px solid var(--border)
+        border-radius: .5em
+        padding: .5em
+        margin: 1em .5em
+        text-align: center
+        small
+            display: block
+
 
 ul.message-options
     color: var(--text-alt)
@@ -280,7 +302,7 @@ button, [type="submit"], [type="reset"], [type="button"]
 
     &.primary
         background-color: var(--accent)
-        color: var(--bg-main)
+        color: var(--background)
 
     &[disabled]
         opacity: .5
@@ -306,5 +328,27 @@ button, [type="submit"], [type="reset"], [type="button"]
     width: 0
     margin-right: auto
 
+.border-accent
+    border: var(--accent) 1px solid
+    display: inline-flex
+    align-items: center
+    padding: 0 4px
 
+.round
+    border-radius: 1em
+
+.done
+    opacity: .5
+
+button.card
+    width: 100%
+    padding: .5em 1em
+    background-color: transparent
+    border-color: var(--accent)
+    color: var(--accent)
+    border-radius: 1em
+
+    &.primary
+        background-color: var(--accent)
+        color: var(--background)
 

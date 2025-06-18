@@ -5,7 +5,22 @@
     box-sizing: border-box
 
 \:root
-    --accent: #ff7300
+    --c0-accent: #ff7300
+    --c1-accent: #ff7300
+    --c2-accent: #f837ce
+    --c3-accent: #38b8ff
+    --c4-accent: #ffe338
+    --c5-accent: #78f038
+    --c6-accent: #ff9aae
+    --c7-accent: #606080
+    --c8-accent: #aeaac0
+    --c9-accent: #3ae0b8
+    --c10-accent: #a828ba
+    --c11-accent: #1871d8
+    --c12-accent: #885a18
+    --c13-accent: #38a856
+    --c14-accent: #ff3018
+    --c15-accent: #ff1668
 
     --light-text-primary: #181818
     --light-text-alt: #444
@@ -24,6 +39,8 @@
     --dark-canvas: #0a0a0e
     --dark-background: #181a21 
     --dark-bg-sharp: #080808
+
+    --accent: var(--c0-accent)
 
     // the following are DEPRECATED //
     --light-accent: var(--accent)
@@ -49,7 +66,7 @@
         --background: var(--dark-background)
         --bg-sharp: var(--dark-bg-sharp)
 
-body.color-scheme-light
+.color-scheme-light
     --text-primary: var(--light-text-primary)
     --text-alt: var(--light-text-alt)
     --border: var(--light-border)
@@ -59,7 +76,7 @@ body.color-scheme-light
     --background: var(--light-background)
     --bg-sharp: var(--light-bg-sharp)
 
-body.color-scheme-dark
+.color-scheme-dark
     --text-primary: var(--dark-text-primary)
     --text-alt: var(--dark-text-alt)
     --border: var(--dark-border)
@@ -68,6 +85,51 @@ body.color-scheme-dark
     --canvas: var(--dark-canvas)
     --background: var(--dark-background)
     --bg-sharp: var(--dark-bg-sharp)
+
+.color-theme-1
+    --accent: var(--c1-accent)
+
+.color-theme-2
+    --accent: var(--c2-accent)
+
+.color-theme-3
+    --accent: var(--c3-accent)
+
+.color-theme-4
+    --accent: var(--c4-accent)
+
+.color-theme-5
+    --accent: var(--c5-accent)
+
+.color-theme-6
+    --accent: var(--c6-accent)
+
+.color-theme-7
+    --accent: var(--c7-accent)
+
+.color-theme-8
+    --accent: var(--c8-accent)
+
+.color-theme-9
+    --accent: var(--c9-accent)
+
+.color-theme-10
+    --accent: var(--c10-accent)
+
+.color-theme-11
+    --accent: var(--c11-accent)
+
+.color-theme-12
+    --accent: var(--c12-accent)
+
+.color-theme-13
+    --accent: var(--c13-accent)
+
+.color-theme-14
+    --accent: var(--c14-accent)
+
+.color-theme-15
+    --accent: var(--c15-accent)
 
 
 body, input, select, button

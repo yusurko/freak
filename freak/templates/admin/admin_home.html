@@ -1,9 +1,12 @@
 {% extends "admin/admin_base.html" %}
 
 {% block content %}
-<ul>
+<ul class="grid">
   <li>
-    <a href="{{ url_for('admin.reports') }}">Reports</a>
+    <h2><a href="{{ url_for('admin.reports') }}">Reports</a></h2>
+  </li>
+  <li>
+    <h2><a href="{{ url_for('admin.strikes') }}">Strikes</a></h2>
   </li>
 </ul>
 {% endblock %}

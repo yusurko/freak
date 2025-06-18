@@ -2,8 +2,8 @@ import os, sys
 import re
 import datetime
 from typing import Mapping
-from flask import Blueprint, render_template, request, redirect, flash
-from flask_login import login_user, logout_user, current_user
+from flask import Blueprint, abort, render_template, request, redirect, flash
+from flask_login import login_required, login_user, logout_user, current_user
 from ..models import REPORT_REASONS, db, User
 from ..utils import age_and_days
 from sqlalchemy import select, insert
@@ -100,4 +100,31 @@ def register():
             return render_template('register.html')
 
     return render_template('register.html')
+
+COLOR_SCHEMES = {'dark': 2, 'light': 1, 'system': 0, 'unset': 0}
+
+@bp.route('/settings', methods=['GET', 'POST'])
+@login_required
+def settings():
+    if request.method == 'POST':
+        user: User = current_user
+        color_scheme = COLOR_SCHEMES[request.form.get('color_scheme')] if 'color_scheme' in request.form else None
+        color_theme = int(request.form.get('color_theme')) if 'color_theme' in request.form else None
+        biography = request.form.get('biography')
+        display_name = request.form.get('display_name')
+        changes = False
+        if display_name and display_name != user.display_name:
+            changes, user.display_name = True, display_name.strip()
+        if biography and biography != user.biography:
+            changes, user.biography = True, biography.strip()
+        if color_scheme is not None and color_theme is not None:
+            comp_color_theme = 256 * color_scheme + color_theme
+            if comp_color_theme != user.color_theme:
+                changes, user.color_theme = True, comp_color_theme
+        if changes:
+            db.session.add(user)
+            db.session.commit()
+        flash('Changes saved!')
+        
+    return render_template('usersettings.html')
 

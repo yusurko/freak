@@ -4,7 +4,7 @@ from flask_login import current_user
 from sqlalchemy import select
 
 from ..search import SearchQuery
-from ..models import Post, db, Topic
+from ..models import Guild, Post, db
 from ..algorithms import public_timeline, top_guilds_query, topic_timeline
 
 bp = Blueprint('frontpage', __name__)
@@ -32,19 +32,19 @@ def explore():
 
 
 @bp.route('/+<name>/')
-def topic_feed(name):
-    topic: Topic | None = db.session.execute(select(Topic).where(Topic.name == name)).scalar()
+def guild_feed(name):
+    guild: Guild | None = db.session.execute(select(Guild).where(Guild.name == name)).scalar()
 
-    if topic is None:
+    if guild is None:
         abort(404)
 
     posts = db.paginate(topic_timeline(name))
 
     return render_template(
-        'feed.html', feed_type='guild', feed_title=f'{topic.display_name} (+{topic.name})', l=posts, topic=topic)
+        'feed.html', feed_type='guild', feed_title=f'{guild.display_name} (+{guild.name})', l=posts, guild=guild)
 
 @bp.route('/r/<name>/')
-def topic_feed_r(name):
+def guild_feed_r(name):
     return redirect('/+' + name + '/'), 302
 
 

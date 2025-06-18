@@ -6,11 +6,13 @@
     <meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="/static/css/style.css">
-    <style>.done{opacity:.5}</style>
+    {% for private_style in private_styles %}
+    <link rel="stylesheet" href="{{ private_style }}" />
+    {% endfor %}
   </head>
-  <body>
+  <body class="admin">
     <div class="header">
-      <h1><a href="{{ url_for('admin.homepage') }}">{{ site_name }} Admin</a></h1>
+      <h1><a href="{{ url_for('admin.homepage') }}"><span class="faint">{{ app_name }}:</span> Admin</a></h1>
     </div>
     <div class="content">
       {% for message in get_flashed_messages() %}

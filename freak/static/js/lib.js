@@ -1,14 +1,6 @@
 (function(){
-	// UNUSED! Period is disallowed regardless now
-  function checkUsername(u){
-	return (
-      /^\./.test(u)? 'You cannot start username with a period.':
-	  /\.$/.test(u)? 'You cannot end username with a period.':
-	  /\.\./.test(u)? 'You cannot have more than one period in a row.':
-	  u.match(/\.(com|net|org|txt)$/)? 'Your username cannot end with .' + forbidden_extensions[1]:
-		'ok'
-	);
-  }
+	"use strict";
+
 
 
   function attachUsernameInput(){
@@ -140,9 +132,36 @@
 	}).then(e => e.json());
   }
 
+  function enableThemeChange() {
+	let schemeItems = document.querySelectorAll('.apply-theme [name="color_scheme"]');
+
+	for (let ii of schemeItems) {
+		ii.addEventListener('change', function(e) {
+			let removed_classes = Array.from(document.body.classList).filter((x) => /^color-scheme-/.test(x));
+			document.body.classList.remove(...removed_classes);
+			if (e.target.value !== 'unset') {
+				document.body.classList.add(`color-scheme-${e.target.value}`);
+			}
+			console.log(`Color scheme changed to ${e.target.value}`)
+		})
+	}
+
+	let themeItems = document.querySelectorAll('.apply-theme [name="color_theme"]');
+
+	for (let ii of themeItems) {
+		ii.addEventListener('change', function(e) {
+			let removed_classes = Array.from(document.body.classList).filter((x) => /^color-theme-/.test(x));
+			document.body.classList.remove(...removed_classes);
+			document.body.classList.add(`color-theme-${e.target.value}`);
+			console.log(`Color theme changed to ${e.target.value}`)
+		})
+	}
+  }
+
   function main() {
 	attachUsernameInput();
 	enablePostVotes();
+	enableThemeChange();
   }
 
   main();

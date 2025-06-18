@@ -6,11 +6,19 @@
     .content-nav, .content-main
         width: 100%
     
+    ul.grid
+        grid-template-columns: 1fr 1fr
+
+    .nomobile
+        display: none
+    
 @media screen and (max-width: 960px)
     .header-username
         display: none
         
     header.header
+        padding: .5em .5em
+
         .mini-search-bar
             display: none
 
@@ -19,3 +27,10 @@
 
         ul > li:has(.mini-search-bar)
             flex: unset
+
+
+// not mobile: //
+
+@media screen and (min-width: 801px)
+    .mobileonly
+        display: none

@@ -4,18 +4,20 @@ from __future__ import annotations
 
 from collections import namedtuple
 import datetime
-from functools import lru_cache
+from functools import partial
 from operator import or_
 from threading import Lock
-from sqlalchemy import Column, String, ForeignKey, and_, text, \
+from sqlalchemy import Column, Integer, String, ForeignKey, UniqueConstraint, text, \
     CheckConstraint, Date, DateTime, Boolean, func, BigInteger, \
-    SmallInteger, select, insert, update, create_engine, Table
-from sqlalchemy.orm import Relationship, declarative_base, relationship
+    SmallInteger, select, update, Table
+from sqlalchemy.orm import Relationship, relationship
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import AnonymousUserMixin
+from suou import SiqType, Snowflake, Wanted, deprecated, not_implemented
+from suou.sqlalchemy import create_session, declarative_base, id_column, parent_children, snowflake_column
 from werkzeug.security import check_password_hash
-import os
-from .iding import new_id, id_to_b32l
+
+from freak import app_config
 from .utils import age_and_days, get_remote_addr, timed_cache
 
 
@@ -25,23 +27,27 @@ USER_ACTIVE   = 0
 USER_INACTIVE = 1
 USER_BANNED   = 2
 
-ReportReason = namedtuple('ReportReason', 'num_code code description')
+ReportReason = namedtuple('ReportReason', 'num_code code description extra', defaults=dict(extra=None))
 
 post_report_reasons = [
+    ## emergency
     ReportReason(110, 'hate_speech', 'Extreme hate speech / terrorism'),
-    ReportReason(121, 'csam', 'Child abuse or endangerment'),
+    ReportReason(121, 'csam', 'Child abuse or endangerment', extra=dict(suspend=True)),
     ReportReason(142, 'revenge_sxm', 'Revenge porn'),
     ReportReason(122, 'black_market', 'Sale or promotion of regulated goods (e.g. firearms)'),
+    ## urgent
     ReportReason(171, 'xxx', 'Pornography'),
     ReportReason(111, 'tasteless', 'Extreme violence / gore'),
     ReportReason(180, 'impersonation', 'Impersonation'),
     ReportReason(141, 'doxing', 'Diffusion of PII (personally identifiable information)'),
-    ReportReason(123, 'copyviol', 'This is my creation and someone else is using it without my permission/license'),
+    ## less urgent
     ReportReason(140, 'bullying', 'Harassment, bullying, or suicide incitement'),
     ReportReason(112, 'lgbt_hate', 'Hate speech against LGBTQ+ or women'),
     ReportReason(150, 'security_exploit', 'Dangerous security exploit or violation'),
     ReportReason(190, 'false_information', 'False or deceiving information'),
-    ReportReason(210, 'underage', 'Presence in violation of age limits (i.e. under 13, or minor in adult spaces)')
+    ReportReason(123, 'copyviol', 'This is my creation and someone else is using it without my permission/license'),
+    ## minor (unironically)
+    ReportReason(210, 'underage', 'Presence in violation of age limits (i.e. under 13, or minor in adult spaces)', extra=dict(suspend=True))
 ]
 
 REPORT_REASON_STRINGS = { **{x.num_code: x.description for x in post_report_reasons}, **{x.code: x.description for x in post_report_reasons} }
@@ -58,20 +64,18 @@ REPORT_UPDATE_ON_HOLD = 3
 
 ## END constants and enums
 
-Base = declarative_base()
+Base = declarative_base(app_config.domain_name, app_config.secret_key, 
+    snowflake_epoch=1577833200)
 db = SQLAlchemy(model_class=Base)
 
-def create_session_interactively():
-    '''Create a session for querying the database in Python REPL.'''
-    engine = create_engine(os.getenv('DATABASE_URL'))
-    return db.Session(bind = engine)
+CSI = create_session_interactively = partial(create_session, app_config.database_url)
 
-CSI = create_session_interactively
 
-## TODO replace with suou.declarative_base() - upcoming 0.4
+# the BaseModel() class will be removed in 0.5
+from .iding import new_id
+@deprecated('id_column() and explicit id column are better. Will be removed in 0.5')
 class BaseModel(Base):
     __abstract__ = True
-
     id = Column(BigInteger, primary_key=True, default=new_id)
 
 ## Many-to-many relationship keys for some reasons have to go
@@ -86,10 +90,22 @@ PostUpvote = Table(
     Column('is_downvote', Boolean, server_default=text('false'))
 )
 
-class User(BaseModel):
-    __tablename__ = 'freak_user'
+UserBlock = Table(
+    'freak_user_block',
+    Base.metadata,
+    Column('actor_id', BigInteger, ForeignKey('freak_user.id'), primary_key=True),
+    Column('target_id', BigInteger, ForeignKey('freak_user.id'), primary_key=True)
+)
 
-    id = Column(BigInteger, primary_key=True, default=new_id, unique=True)
+
+class User(Base):
+    __tablename__ = 'freak_user'
+    __table_args__ = (
+        ## XXX this constraint (and the other three at Post, Guild and Comment) cannot be removed!!
+        UniqueConstraint('id', name='user_id_uniq'),
+    )
+
+    id = snowflake_column()
 
     username = Column(String(32), CheckConstraint(text("username = lower(username) and username ~ '^[a-z0-9_-]+$'"), name="user_username_valid"), unique=True, nullable=False)
     display_name = Column(String(64), nullable=False)
@@ -102,7 +118,10 @@ class User(BaseModel):
     is_disabled_by_user = Column(Boolean, server_default=text('false'), nullable=False)
     karma = Column(BigInteger, server_default=text('0'), nullable=False)
     legacy_id = Column(BigInteger, nullable=True)
-    # TODO add pronouns and biography (upcoming 0.4)
+    
+    pronouns = Column(Integer, server_default=text('0'), nullable=False)
+    biography = Column(String(1024), nullable=True)
+    color_theme = Column(SmallInteger, nullable=False, server_default=text('0'))
 
     # moderation
     banned_at = Column(DateTime, nullable=True)
@@ -110,18 +129,22 @@ class User(BaseModel):
     banned_reason = Column(SmallInteger, server_default=text('0'), nullable=True)
     banned_until = Column(DateTime, nullable=True)
     banned_message = Column(String(256), nullable=True)
+
+    # invites
+    is_approved = Column(Boolean, server_default=text('false'), nullable=False)
+    invited_by_id = Column(BigInteger, ForeignKey('freak_user.id', name='user_inviter_id'), nullable=True)
     
     # utilities
-    #posts = relationship("Post", back_populates='author', )
-    upvoted_posts = relationship("Post", secondary=PostUpvote, back_populates='upvoters')
-    #comments = relationship("Comment", back_populates='author')
     ## XXX posts and comments relationships are temporarily disabled because they make
     ## SQLAlchemy fail initialization of models — bricking the app.
     ## Posts are queried manually anyway
-
+    #posts = relationship("Post", back_populates='author', )
+    upvoted_posts = relationship("Post", secondary=PostUpvote, back_populates='upvoters')
+    #comments = relationship("Comment", back_populates='author')
+    
     @property
     def is_disabled(self):
-        return self.banned_at is not None or self.is_disabled_by_user
+        return (self.banned_at is not None and (self.banned_until is None or self.banned_until <= datetime.datetime.now())) or self.is_disabled_by_user
 
     @property
     def is_active(self):
@@ -151,7 +174,7 @@ class User(BaseModel):
         """
         ## XXX change func name?
         return dict(
-            id = id_to_b32l(self.id),
+            id = Snowflake(self.id).to_b32l(),
             username = self.username,
             display_name = self.display_name,
             age = self.age()
@@ -159,15 +182,18 @@ class User(BaseModel):
         )
 
     def reward(self, points=1):
+        """
+        Manipulate a user's karma on the fly
+        """
         with Lock():
             db.session.execute(update(User).where(User.id == self.id).values(karma = self.karma + points))
             db.session.commit()
 
     def can_create_guild(self):
+        ## TODO make guild creation requirements configurable
         return self.karma > 15 or self.is_administrator
 
-    ## deprecated alias!
-    can_create_community = can_create_guild
+    can_create_community = deprecated('use .can_create_guild()')(can_create_guild)
 
     def handle(self):
         return f'@{self.username}'
@@ -188,6 +214,22 @@ class User(BaseModel):
     def not_suspended(cls):
         return or_(User.banned_at == None, User.banned_until <= datetime.datetime.now())
 
+    @classmethod
+    def has_not_blocked(cls, actor, target):
+        """
+        Filter out a content if the author has blocked current user. 
+        
+        XXX untested.
+        """
+
+        # TODO add recognition
+        actor_id = actor
+        target_id = target
+
+        qq= ~select(UserBlock).where(UserBlock.c.actor_id == actor_id, UserBlock.c.target_id == target_id).exists()
+        print(qq)
+        return qq
+
     def recompute_karma(self):
         c = 0
         c += db.session.execute(select(func.count('*')).select_from(Post).where(Post.author == self)).scalar()
@@ -196,10 +238,19 @@ class User(BaseModel):
 
         self.karma = c
 
-class Topic(BaseModel):
-    __tablename__ = 'freak_topic'
+    @timed_cache(60)
+    def strike_count(self) -> int:
+        return db.session.execute(select(func.count('*')).select_from(UserStrike).where(UserStrike.user_id == self.id)).scalar()
 
-    id = Column(BigInteger, primary_key=True, default=new_id, unique=True)
+## END User
+
+class Guild(Base):
+    __tablename__ = 'freak_topic'
+    __table_args__ = (
+        UniqueConstraint('id', name='topic_id_uniq'),
+    )
+
+    id = snowflake_column()
     
     name = Column(String(32), CheckConstraint(text("name = lower(name) AND name ~ '^[a-z0-9_-]+$'"), name='topic_name_valid'), unique=True, nullable=False)
     display_name = Column(String(64), nullable=False)
@@ -207,8 +258,12 @@ class Topic(BaseModel):
     created_at = Column(DateTime, server_default=func.current_timestamp(), index=True, nullable=False)
     owner_id = Column(BigInteger, ForeignKey('freak_user.id', name='topic_owner_id'), nullable=True)
     language = Column(String(16), server_default=text("'en-US'"))
-    privacy = Column(SmallInteger, server_default=text('0'))
+    # true: prevent non-members from participating
+    is_restricted = Column(Boolean, server_default=text('false'), nullable=False)
+    # false: make the guild invite-only
+    is_public = Column(Boolean, server_default=text('true'), nullable=False)
 
+    # MUST NOT be filled in on post-0.2 instances
     legacy_id = Column(BigInteger, nullable=True)
     
     def url(self):
@@ -218,16 +273,56 @@ class Topic(BaseModel):
         return f'+{self.name}'
 
     # utilities
-    posts = relationship('Post', back_populates='topic')
+    posts = relationship('Post', back_populates='guild')
+
+
+Topic = deprecated('renamed to Guild')(Guild)
+
+## END Guild
+
+class Member(Base):
+    """
+    User-Guild relationship. NEW in 0.4.0.
+    """
+    __tablename__ = 'freak_member'
+    __table_args__ = (
+        UniqueConstraint('user_id', 'guild_id', name='member_user_topic'),
+    )
+
+    ## Newer tables use SIQ. Older tables will gradually transition to SIQ as well.
+    id = id_column(SiqType.MANYTOMANY)
+    user_id = Column(BigInteger, ForeignKey('freak_user.id'))
+    guild_id = Column(BigInteger, ForeignKey('freak_topic.id'))
+    is_approved = Column(Boolean, server_default=text('false'), nullable=False)
+    is_subscribed = Column(Boolean, server_default=text('false'), nullable=False)
+    is_moderator = Column(Boolean, server_default=text('false'), nullable=False)
+
+    # moderation
+    banned_at = Column(DateTime, nullable=True)
+    banned_by_id = Column(BigInteger, ForeignKey('freak_user.id', name='user_banner_id'), nullable=True)
+    banned_reason = Column(SmallInteger, server_default=text('0'), nullable=True)
+    banned_until = Column(DateTime, nullable=True)
+    banned_message = Column(String(256), nullable=True)
+
+    user = relationship(User, primaryjoin = lambda: User.id == Member.user_id)
+    guild = relationship(Guild)
+    banned_by = relationship(User, primaryjoin= lambda: User.id == Member.banned_by_id)
+
+    @property
+    def is_banned(self):
+        return self.banned_at is not None and (self.banned_until is None or self.banned_until <= datetime.datetime.now())
 
 
 POST_TYPE_DEFAULT = 0
 POST_TYPE_LINK = 1
     
-class Post(BaseModel):
+class Post(Base):
     __tablename__ = 'freak_post'
+    __table_args__ = (
+        UniqueConstraint('id', name='post_id_uniq'),
+    )
 
-    id = Column(BigInteger, primary_key=True, default=new_id, unique=True)
+    id = snowflake_column()
 
     slug = Column(String(64), CheckConstraint("slug IS NULL OR (slug = lower(slug) AND slug ~ '^[a-z0-9_-]+$')", name='post_slug_valid'), nullable=True)
     title = Column(String(256), nullable=False)
@@ -251,16 +346,17 @@ class Post(BaseModel):
 
     # utilities
     author: Relationship[User] = relationship("User", lazy='selectin', foreign_keys=[author_id])#, back_populates="posts")
-    topic = relationship("Topic", back_populates="posts", lazy='selectin')
+    guild = relationship("Guild", back_populates="posts", lazy='selectin')
     comments = relationship("Comment", back_populates="parent_post")
     upvoters = relationship("User", secondary=PostUpvote, back_populates='upvoted_posts')
 
-    def topic_or_user(self) -> Topic | User:
-        return self.topic or self.author
+    def topic_or_user(self) -> Guild | User:
+        return self.guild or self.author
     
     def url(self):
-        return self.topic_or_user().url() + '/comments/' + id_to_b32l(self.id) + '/' + (self.slug or '')
+        return self.topic_or_user().url() + '/comments/' + Snowflake(self.id).to_b32l() + '/' + (self.slug or '')
     
+    @not_implemented
     def generate_slug(self):
         return slugify.slugify(self.title, max_length=64)
 
@@ -271,7 +367,7 @@ class Post(BaseModel):
     def upvoted_by(self, user: User | AnonymousUserMixin | None):
         if not user or not user.is_authenticated:
             return 0
-        v = db.session.execute(db.select(PostUpvote.c).where(PostUpvote.c.voter_id == user.id, PostUpvote.c.post_id == self.id)).fetchone()
+        v: PostUpvote | None = db.session.execute(select(PostUpvote.c).where(PostUpvote.c.voter_id == user.id, PostUpvote.c.post_id == self.id)).fetchone()
         if v:
             if v.is_downvote:
                 return -1
@@ -282,7 +378,7 @@ class Post(BaseModel):
         return db.session.execute(select(Comment).where(Comment.parent_comment == None, Comment.parent_post == self).order_by(Comment.created_at.desc()).limit(limit)).scalars()
 
     def report_url(self) -> str:
-        return '/report/post/' + id_to_b32l(self.id)
+        return f'/report/post/{Snowflake(self.id):l}'
 
     def report_count(self) -> int:
         return db.session.execute(select(func.count('*')).select_from(PostReport).where(PostReport.target_id == self.id, ~PostReport.update_status.in_((1, 2)))).scalar()
@@ -305,12 +401,13 @@ class Post(BaseModel):
         return or_(Post.author_id == user.id, Post.privacy.in_((0, 1)))
 
 
-class Comment(BaseModel):
+class Comment(Base):
     __tablename__ = 'freak_comment'
+    __table_args__ = (
+        UniqueConstraint('id', name='comment_id_uniq'),
+    )
 
-    # tweak to allow remote_side to work
-    ## XXX will be changed in 0.4 to suou.id_column()
-    id = Column(BigInteger, primary_key=True, default=new_id, unique=True)
+    id = snowflake_column()
 
     author_id = Column(BigInteger, ForeignKey('freak_user.id', name='comment_author_id'), nullable=True)
     parent_post_id = Column(BigInteger, ForeignKey('freak_post.id', name='comment_parent_post_id'), nullable=False)
@@ -321,6 +418,7 @@ class Comment(BaseModel):
     updated_at = Column(DateTime, nullable=True)
     is_locked = Column(Boolean, server_default=text('false'))
 
+    ## DO NOT FILL IN! intended for 0.2 or earlier
     legacy_id = Column(BigInteger, nullable=True)
 
     removed_at = Column(DateTime, nullable=True)
@@ -328,15 +426,14 @@ class Comment(BaseModel):
     removed_reason = Column(SmallInteger, nullable=True)
 
     author = relationship('User', foreign_keys=[author_id])#, back_populates='comments')
-    parent_post = relationship("Post", back_populates="comments", foreign_keys=[parent_post_id])
-    parent_comment = relationship("Comment", back_populates="child_comments", remote_side=[id])
-    child_comments = relationship("Comment", back_populates="parent_comment")
+    parent_post: Relationship[Post] = relationship("Post", back_populates="comments", foreign_keys=[parent_post_id])
+    parent_comment, child_comments = parent_children('comment', parent_remote_side=Wanted('id'))
 
     def url(self):
-        return self.parent_post.url() + '/comment/' + id_to_b32l(self.id)
+        return self.parent_post.url() + f'/comment/{Snowflake(self.id):l}'
 
     def report_url(self) -> str:
-        return '/report/comment/' + id_to_b32l(self.id)
+        return f'/report/comment/{Snowflake(self.id):l}' 
 
     def report_count(self) -> int:
         return db.session.execute(select(func.count('*')).select_from(PostReport).where(PostReport.target_id == self.id, ~PostReport.update_status.in_((1, 2)))).scalar()
@@ -349,8 +446,10 @@ class Comment(BaseModel):
     def not_removed(cls):
         return Post.removed_at == None
 
-class PostReport(BaseModel):
+class PostReport(Base):
     __tablename__ = 'freak_postreport'
+
+    id = snowflake_column()
     
     author_id = Column(BigInteger, ForeignKey('freak_user.id', name='report_author_id'), nullable=True)
     target_type = Column(SmallInteger, nullable=False)
@@ -361,7 +460,7 @@ class PostReport(BaseModel):
     created_ip = Column(String(64), default=get_remote_addr, nullable=False)
 
     author = relationship('User')
-
+    
     def target(self):
         if self.target_type == REPORT_TARGET_POST:
             return db.session.execute(select(Post).where(Post.id == self.target_id)).scalar()
@@ -369,6 +468,27 @@ class PostReport(BaseModel):
             return db.session.execute(select(Comment).where(Comment.id == self.target_id)).scalar()
         else:
             return self.target_id
+
+    def is_critical(self):
+        return self.reason_code in (
+            121, 142, 210
+        )
+
+class UserStrike(Base):
+    __tablename__ = 'freak_user_strike'
+
+    id = id_column(SiqType.MULTI)
+
+    user_id = Column(BigInteger, ForeignKey('freak_user.id', ondelete='cascade'), nullable=False)
+    target_type = Column(SmallInteger, nullable=False)
+    target_id = Column(BigInteger, nullable=False)
+    target_content = Column(String(4096), nullable=True)
+    reason_code = Column(SmallInteger, nullable=False)
+    issued_at = Column(DateTime, server_default=func.current_timestamp())
+    issued_by_id = Column(BigInteger, ForeignKey('freak_user.id'), nullable=True)
+
+    user = relationship(User, primaryjoin= lambda: User.id == UserStrike.user_id)
+    issued_by = relationship(User, primaryjoin= lambda: User.id == UserStrike.issued_by_id)
 
 # PostUpvote table is at the top !!
 

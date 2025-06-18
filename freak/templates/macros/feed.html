@@ -5,8 +5,8 @@
   <div id="post-{{ p.id | to_b32l }}" class="post-frame" data-endpoint="{{ p.id | to_b32l }}">
 	<h3 class="message-title"><a href="{{ p.url() }}">{{ p.title }}</a></h3>
 	<div class="message-meta">Posted by <a href="{{ p.author.url() }}">@{{ p.author.username }}</a>
-	  {% if p.topic %}
-		on <a href="{{ p.topic.url() }}">+{{ p.topic.name }}</a>
+	  {% if p.guild %}
+		on <a href="{{ p.guild.url() }}">{{ p.guild.handle() }}</a>
 	  {% else %}
 		on their user page
 	  {% endif %}

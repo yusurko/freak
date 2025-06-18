@@ -1,9 +1,11 @@
 
 
+import re
 from sqlite3 import ProgrammingError
+from typing import Any
 import warnings
 from flask import (
-    Flask, g, redirect, render_template,
+    Flask, g, render_template,
     request, send_from_directory, url_for
 )
 import os
@@ -11,23 +13,38 @@ import dotenv
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
+from suou import Snowflake, ssv_list
 from werkzeug.routing import BaseConverter
 from sassutils.wsgi import SassMiddleware
 
-__version__ = '0.3.3'
+from suou.configparse import ConfigOptions, ConfigValue
+
+from freak.colors import color_themes, theme_classes
+
+__version__ = '0.4.0-dev24'
 
 APP_BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 if not dotenv.load_dotenv():
-    warnings.warn('.env not loaded; application may break!', UserWarning)
+    warnings.warn('.env not loaded; application may break!', RuntimeWarning)
+
+class AppConfig(ConfigOptions):
+    secret_key = ConfigValue(required=True)
+    database_url = ConfigValue(required=True)
+    app_name = ConfigValue()
+    domain_name = ConfigValue()
+    private_assets = ConfigValue(cast=ssv_list)
+    jquery_url = ConfigValue(default='https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js')
+
+app_config = AppConfig()
 
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+app.secret_key = app_config.secret_key
+app.config['SQLALCHEMY_DATABASE_URI'] = app_config.database_url
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 
 from .models import db, User, Post
-from .iding import id_from_b32l, id_to_b32l
 
 # SASS
 app.wsgi_app = SassMiddleware(app.wsgi_app, dict(
@@ -40,9 +57,9 @@ class SlugConverter(BaseConverter):
 class B32lConverter(BaseConverter):
     regex = r'_?[a-z2-7]+'
     def to_url(self, value):
-        return id_to_b32l(value)
+        return Snowflake(value).to_b32l()
     def to_python(self, value):
-        return id_from_b32l(value)
+        return Snowflake.from_b32l(value)
 
 app.url_map.converters['slug'] = SlugConverter
 app.url_map.converters['b32l'] = B32lConverter
@@ -62,33 +79,40 @@ PRIVATE_ASSETS = os.getenv('PRIVATE_ASSETS', '').split()
 @app.context_processor
 def _inject_variables():
     return {
-        'app_name': os.getenv('APP_NAME'),
+        'app_name': app_config.app_name,
         'app_version': __version__,
-        'domain_name': os.getenv('DOMAIN_NAME'),
+        'domain_name': app_config.domain_name,
         'url_for_css': (lambda name, **kwargs: url_for('static', filename=f'css/{name}.css', **kwargs)),
-        'private_scripts': [x for x in PRIVATE_ASSETS if x.endswith('.js')],
+        'private_scripts': [x for x in app_config.private_assets if x.endswith('.js')],
         'private_styles': [x for x in PRIVATE_ASSETS if x.endswith('.css')],
-        'jquery_url': os.getenv('JQUERY_URL') or 'https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js',
+        'jquery_url': app_config.jquery_url,
         'post_count': Post.count(),
-        'user_count': User.active_count()
+        'user_count': User.active_count(),
+        'colors': color_themes,
+        'theme_classes': theme_classes
     }
 
 @login_manager.user_loader
 def _inject_user(userid):
     try:
-        return db.session.execute(select(User).where(User.id == userid)).scalar()
-    except Exception:
-        warnings.warn(f'cannot retrieve user {userid} from db', RuntimeWarning)
+        u = db.session.execute(select(User).where(User.id == userid)).scalar()
+        if u is None or u.is_disabled:
+            return None
+        return u
+    except SQLAlchemyError as e:
+        warnings.warn(f'cannot retrieve user {userid} from db (exception: {e})', RuntimeWarning)
         g.no_user = True
         return None
+
+def redact_url_password(u: str | Any) -> str | Any:
+    if not isinstance(u, str):
+        return u
+    return re.sub(r':[^@:/ ]+@', ':***@', u)
 
 @app.errorhandler(ProgrammingError)
 def error_db(body):
     g.no_user = True
-    warnings.warn(f'No database access! (url is {app.config['SQLALCHEMY_DATABASE_URI']})', RuntimeWarning)
-    fix_database_url()
-    if request.method in ('HEAD', 'GET') and not 'retry' in request.args:
-        return redirect(request.url + ('&' if '?' in request.url else '?') + 'retry=1'), 307, {'cache-control': 'private,no-cache,must-revalidate,max-age=0'}
+    warnings.warn(f'No database access! (url is {redact_url_password(app.config['SQLALCHEMY_DATABASE_URI'])!r})', RuntimeWarning)
     return render_template('500.html'), 500
 
 @app.errorhandler(400)
