@@ -1,0 +1,27 @@
+
+
+{% from "macros/icon.html" import icon with context%}
+
+{% macro block_button(target, blocked = False) %}
+<form method="POST" action="{{ target.url() }}/block">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+  {% if blocked %}
+    <input type="hidden" name="reverse" value="1" />
+    <button type="submit" class="card">{{ icon('self') }} Remove block</button>
+  {% else %}
+    <button type="submit" class="card">{{ icon('block') }} Block</button>
+{% endif %}
+</form>
+{% endmacro %}
+
+{% macro subscribe_button(target, subbed = False) %}
+<form method="POST" action="{{ target.url() }}/subscribe">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+  {% if subbed %}
+    <input type="hidden" name="reverse" value="1" />
+    <button type="submit" class="card">{{ icon('leave') }} Unsubscribe</button>
+  {% else %}
+    <button type="submit" class="card">{{ icon('join') }} Subscribe</button>
+{% endif %}
+</form>
+{% endmacro %}

@@ -11,18 +11,18 @@
     {% endfor %}
   </head>
   <body class="admin">
-    <div class="header">
+    <header class="header">
       <h1><a href="{{ url_for('admin.homepage') }}"><span class="faint">{{ app_name }}:</span> Admin</a></h1>
-    </div>
+    </header>
     <div class="content">
       {% for message in get_flashed_messages() %}
         <div class="flash">{{ message }}</div>
       {% endfor %}
       {% block content %}{% endblock %}
     </div>
-    <div class="footer">
+    <footer class="footer">
       <p><a href="/">Back to {{ app_name }}</a>.</p>
-    </div>
+    </footer>
     <script src="/static/lib.js"></script>
   </body>
 </html>

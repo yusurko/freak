@@ -6,10 +6,12 @@ AJAX hooks for the website.
 '''
 
 import re
-from flask import Blueprint, request
+from flask import Blueprint, abort, flash, redirect, request
 from sqlalchemy import delete, insert, select
-from .models import Guild, db, User, Post, PostUpvote
+from .models import Guild, Member, UserBlock, db, User, Post, PostUpvote
 from flask_login import current_user, login_required
+
+current_user: User
 
 bp = Blueprint('ajax', __name__)
 
@@ -70,4 +72,82 @@ def post_upvote(id):
 
     db.session.commit()
     return { 'status': 'ok', 'count': p.upvotes() }
+
+@bp.route('/@<username>/block', methods=['POST'])
+@login_required
+def block_user(username):
+    u = db.session.execute(select(User).where(User.username == username)).scalar()
+    
+    if u is None:
+        abort(404)
+    
+    is_block = 'reverse' not in request.form
+    is_unblock = request.form.get('reverse') == '1'
+
+    if is_block:
+        if current_user.has_blocked(u):
+            flash(f'{u.handle()} is already blocked')
+        else:
+            db.session.execute(insert(UserBlock).values(
+                actor_id = current_user.id,
+                target_id = u.id
+            ))
+            db.session.commit()
+            flash(f'{u.handle()} is now blocked')
+
+    if is_unblock:
+        if not current_user.has_blocked(u):
+            flash('You didn\'t block this user')
+        else:
+            db.session.execute(delete(UserBlock).where(
+                UserBlock.c.actor_id == current_user.id,
+                UserBlock.c.target_id == u.id
+            ))
+            db.session.commit()
+            flash(f'Removed block on {u.handle()}')
+        
+    return redirect(request.args.get('next', u.url())), 303
+
+@bp.route('/+<name>/subscribe', methods=['POST'])
+@login_required
+def subscribe_guild(name):
+    gu = db.session.execute(select(Guild).where(Guild.name == name)).scalar()
+
+    if gu is None:
+        abort(404)
+    
+    is_join = 'reverse' not in request.form
+    is_leave = request.form.get('reverse') == '1'
+
+    membership = db.session.execute(select(Member).where(Member.guild == gu, Member.user_id == current_user.id)).scalar()
+
+    if is_join:
+        if membership is None:
+            membership = db.session.execute(insert(Member).values(
+                guild_id = gu.id,
+                user_id = current_user.id,
+                is_subscribed = True
+            ).returning(Member)).scalar()
+        elif membership.is_subscribed == False:
+            membership.is_subscribed = True
+            db.session.add(membership)
+        else:
+            return redirect(gu.url()), 303
+        db.session.commit()
+        flash(f"You are now subscribed to {gu.handle()}")
+
+    if is_leave:
+        if membership is None:
+            return redirect(gu.url()), 303
+        elif membership.is_subscribed == True:
+            membership.is_subscribed = False
+            db.session.add(membership)
+        else:
+            return redirect(gu.url()), 303
+
+        db.session.commit()
+        flash(f"Unsubscribed from {gu.handle()}.")
+    
+    return redirect(gu.url()), 303
+
 

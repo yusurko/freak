@@ -1,4 +1,6 @@
 
+{% from "macros/icon.html" import icon with context %}
+
 {% macro checked_if(cond) %}
 {% if cond -%}
 checked=""
@@ -12,11 +14,11 @@ disabled=""
 {% endmacro %}
 
 {% macro privacy_select(value = 0) %}
-<ul>
-  <li><input type="radio" name="privacy" value="0" id="new__privacy_0" {{ checked_if(value == 0) }} /><label for="new__privacy_0" >Public <small class="faint">(everyone in your profile or public timeline)</small></label></li>
-  <li><input type="radio" name="privacy" value="1" id="new__privacy_1" {{ checked_if(value == 1) }} /><label for="new__privacy_1" >Unlisted <small class="faint">(everyone in your profile, hide from public timeline)</small></label></li>
-  <li><input type="radio" name="privacy" value="2" id="new__privacy_2" {{ checked_if(value == 2) }} /><label for="new__privacy_2" >Friends <small class="faint">(only people you follow each other)</small></label></li>
-  <li><input type="radio" name="privacy" value="3" id="new__privacy_3" {{ checked_if(value == 3) }} /><label for="new__privacy_3" >Only you <small class="faint">(nobody else)</small></label></li>
+<ul class="grid">
+  <li><input type="radio" name="privacy" value="0" id="new__privacy_0" {{ checked_if(value == 0) }} /><label for="new__privacy_0" >{{ icon('topic_travel') }} Public <small class="faint">(everyone in your profile or public timeline)</small></label></li>
+  <li><input type="radio" name="privacy" value="1" id="new__privacy_1" {{ checked_if(value == 1) }} /><label for="new__privacy_1" >{{ icon('link_post') }} Unlisted <small class="faint">(everyone in your profile, hide from public timeline)</small></label></li>
+  <li><input type="radio" name="privacy" value="2" id="new__privacy_2" {{ checked_if(value == 2) }} /><label for="new__privacy_2" >{{ icon('custom_feed') }} Friends <small class="faint">(only people you follow each other)</small></label></li>
+  <li><input type="radio" name="privacy" value="3" id="new__privacy_3" {{ checked_if(value == 3) }} /><label for="new__privacy_3" >{{ icon('lock') }} Only you <small class="faint">(nobody else)</small></label></li>
 </ul>
 {% endmacro %}
 

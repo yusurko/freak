@@ -11,7 +11,7 @@ bp = Blueprint('frontpage', __name__)
 
 @bp.route('/')
 def homepage():
-    top_communities = [(x[0], x[1], 0) for x in 
+    top_communities = [(x[0], x[1], x[2]) for x in 
             db.session.execute(top_guilds_query().limit(10)).fetchall()]
 
     if current_user and current_user.is_authenticated:

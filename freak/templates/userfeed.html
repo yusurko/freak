@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from "macros/feed.html" import feed_post, stop_scrolling, no_more_scrolling with context %}
 {% from "macros/title.html" import title_tag with context %}
-{% from "macros/icon.html" import icon, callout with context %}
+{% from "macros/icon.html" import icon, big_icon, callout with context %}
 {% from "macros/nav.html" import nav_user with context %}
 
 {% block title %}{{ title_tag(user.handle() + '’s content') }}{% endblock %}
@@ -16,9 +16,8 @@
 {% endblock %}
 
 {% block nav %}
-  {{ nav_user(user) }}
-  {% if user == current_user %}
-  <a href="/settings"><button class="card">{{ icon('settings') }} Settings</button></a>
+  {% if user.is_active and not user.has_blocked(current_user) %}
+    {{ nav_user(user) }}
   {% endif %}
 {% endblock %}
 
@@ -40,9 +39,10 @@
 		{% endif %}
 	</ul>
   {% elif not user.is_active %}
+    {{ big_icon('ban') }}
 	<p class="centered">{{ user.handle() }} is suspended</p>
   {% else %}
-	<p class="centered">{{ user.handle() }} never posted any content</p>
+	<p class="centered">{{ user.handle() }} has never posted any content</p>
   {% endif %}
 {% endblock %}
   

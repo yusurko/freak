@@ -214,10 +214,28 @@ class User(Base):
     def not_suspended(cls):
         return or_(User.banned_at == None, User.banned_until <= datetime.datetime.now())
 
+    def has_blocked(self, other: User | None) -> bool:
+        if other is None or not other.is_authenticated:
+            return False
+        return bool(db.session.execute(select(UserBlock).where(UserBlock.c.actor_id == self.id, UserBlock.c.target_id == other.id)).scalar())
+
+    @not_implemented()
+    def end_friendship(self, other: User):
+        """
+        Remove any relationship between two users.
+        Executed before block.
+        """
+        # TODO implement in 0.5
+        ...
+
+    def has_subscriber(self, other: User) -> bool:
+        # TODO implement in 0.5
+        return False #bool(db.session.execute(select(Friendship).where(...)).scalar())
+
     @classmethod
     def has_not_blocked(cls, actor, target):
         """
-        Filter out a content if the author has blocked current user. 
+        Filter out a content if the author has blocked current user.  Returns a query.
         
         XXX untested.
         """
@@ -241,6 +259,8 @@ class User(Base):
     @timed_cache(60)
     def strike_count(self) -> int:
         return db.session.execute(select(func.count('*')).select_from(UserStrike).where(UserStrike.user_id == self.id)).scalar()
+
+# UserBlock table is at the top !!
 
 ## END User
 
@@ -272,9 +292,16 @@ class Guild(Base):
     def handle(self):
         return f'+{self.name}'
 
+    def subscriber_count(self):
+        return db.session.execute(select(func.count('*')).select_from(Member).where(Member.guild == self, Member.is_subscribed == True)).scalar()
+
     # utilities
     posts = relationship('Post', back_populates='guild')
 
+    def has_subscriber(self, other: User) -> bool:
+        if other is None or not other.is_authenticated:
+            return False
+        return bool(db.session.execute(select(Member).where(Member.user_id == other.id, Member.guild_id == self.id, Member.is_subscribed == True)).scalar())
 
 Topic = deprecated('renamed to Guild')(Guild)
 
@@ -306,7 +333,7 @@ class Member(Base):
 
     user = relationship(User, primaryjoin = lambda: User.id == Member.user_id)
     guild = relationship(Guild)
-    banned_by = relationship(User, primaryjoin= lambda: User.id == Member.banned_by_id)
+    banned_by = relationship(User, primaryjoin = lambda: User.id == Member.banned_by_id)
 
     @property
     def is_banned(self):
@@ -356,9 +383,9 @@ class Post(Base):
     def url(self):
         return self.topic_or_user().url() + '/comments/' + Snowflake(self.id).to_b32l() + '/' + (self.slug or '')
     
-    @not_implemented
-    def generate_slug(self):
-        return slugify.slugify(self.title, max_length=64)
+    @not_implemented('slugify is not a dependency as of now')
+    def generate_slug(self) -> str:
+        return "slugify.slugify(self.title, max_length=64)"
 
     def upvotes(self) -> int:
         return (db.session.execute(select(func.count('*')).select_from(PostUpvote).where(PostUpvote.c.post_id == self.id, PostUpvote.c.is_downvote == False)).scalar()
@@ -397,8 +424,8 @@ class Post(Base):
         return Post.removed_at == None
 
     @classmethod
-    def visible_by(cls, user: User):
-        return or_(Post.author_id == user.id, Post.privacy.in_((0, 1)))
+    def visible_by(cls, user_id: int | None):
+        return or_(Post.author_id == user_id, Post.privacy.in_((0, 1)))
 
 
 class Comment(Base):

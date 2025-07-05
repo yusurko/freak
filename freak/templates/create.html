@@ -9,7 +9,6 @@
 {% endblock %}
 
 {% block content %}
-
 <div class="card">
   <form action="{{ url_for('create.create') }}" method="POST" enctype="multipart/form-data" class="boundaryless">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

@@ -5,7 +5,7 @@
   <ul>
   {% for strike in strike_list %}
     <li>
-      <p><strong>#{{ strike.id }}</strong> to {{ strike.user.handle() }}</p>
+      <p><strong>#{{ strike.id | to_cb32 }}</strong> to {{ strike.user.handle() }}</p>
       <ul class="inline">
       <li>Reason: <strong>{{ report_reasons[strike.reason_code] }}</strong></li>
       <!-- you might not want to see why -->

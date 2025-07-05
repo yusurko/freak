@@ -40,12 +40,12 @@
 		  {% endif %}
 		</div>
 		{% if current_user.is_administrator and p.report_count() %}
-		  {% call callout() %}
+		  {% call callout('spoiler', 'error') %}
 			<strong>{{ p.report_count() }}</strong> reports. <a href="{{ url_for('admin.reports') }}">Take action</a>
 		  {% endcall %}
 		{% endif %}
 		{% if p.is_removed %}
-		  {% call callout('delete') %}
+		  {% call callout('delete', 'error') %}
 			This post has been removed
 		  {% endcall %}
 		{% endif %}
@@ -69,7 +69,7 @@
 	{{ comment_area(p.url()) }}
 	<div class="comment-section">
 	  <ul>
-	  {% for comment in p.top_level_comments() %}
+	  {% for comment in comments %}
 	  	<li id="comment-{{ comment.id }}" data-endpoint="{{ comment.id|to_b32l }}">
 		  {{ single_comment(comment) }}
 

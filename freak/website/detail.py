@@ -1,4 +1,5 @@
 
+from typing import Iterable
 from flask import Blueprint, abort, flash, request, redirect, render_template, url_for
 from flask_login import current_user
 from sqlalchemy import insert, select
@@ -6,7 +7,7 @@ from suou import Snowflake
 
 from ..utils import is_b32l
 from ..models import Comment, Guild, db, User, Post
-from ..algorithms import user_timeline
+from ..algorithms import new_comments, user_timeline
 
 bp = Blueprint('detail', __name__)
 
@@ -64,12 +65,17 @@ def post_detail(id: int):
     else:
         abort(404)
 
+def comments_of(p: Post) -> Iterable[Comment]:
+    ## TODO add sort argument
+    return db.paginate(new_comments(p))
+
+
 @bp.route('/@<username>/comments/<b32l:id>/', methods=['GET', 'POST'])
 @bp.route('/@<username>/comments/<b32l:id>/<slug:slug>', methods=['GET', 'POST'])
 def user_post_detail(username: str, id: int, slug: str = ''):
     post: Post | None = db.session.execute(select(Post).join(User, User.id == Post.author_id).where(Post.id == id, User.username == username)).scalar()
 
-    if post is None or (post.is_removed and post.author != current_user):
+    if post is None or (post.author and post.author.has_blocked(current_user)) or (post.is_removed and post.author != current_user):
         abort(404)
 
     if post.slug and slug != post.slug:
@@ -78,14 +84,14 @@ def user_post_detail(username: str, id: int, slug: str = ''):
     if request.method == 'POST':
         single_post_post_hook(post)
 
-    return render_template('singlepost.html', p=post)
+    return render_template('singlepost.html', p=post, comments=comments_of(post))
 
 @bp.route('/+<gname>/comments/<b32l:id>/', methods=['GET', 'POST'])
 @bp.route('/+<gname>/comments/<b32l:id>/<slug:slug>', methods=['GET', 'POST'])
 def guild_post_detail(gname, id, slug=''):
     post: Post | None = db.session.execute(select(Post).join(Guild).where(Post.id == id, Guild.name == gname)).scalar()
 
-    if post is None or (post.is_removed and post.author != current_user):
+    if post is None or (post.author and post.author.has_blocked(current_user)) or (post.is_removed and post.author != current_user):
         abort(404)
 
     if post.slug and slug != post.slug:
@@ -94,7 +100,7 @@ def guild_post_detail(gname, id, slug=''):
     if request.method == 'POST':
         single_post_post_hook(post)
 
-    return render_template('singlepost.html', p=post)
+    return render_template('singlepost.html', p=post, comments=comments_of(post))
 
 
 

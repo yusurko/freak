@@ -1,4 +1,7 @@
 
+{% from "macros/icon.html" import icon with context %}
+{% from "macros/button.html" import block_button, subscribe_button with context %}
+
 {% macro nav_guild(gu) %}
   <aside class="card">
 	<h3>About <a href="{{ gu.url() }}">{{ gu.handle() }}</a></h3>
@@ -6,21 +9,37 @@
 	  <li><i class="icon icon-info" style="font-size:inherit"></i> {{ gu.description }}</li>
 	  <li>
 		<strong>{{ gu.posts | count }}</strong> posts -
-		<strong>-</strong> subscribers
+		<strong>{{ gu.subscriber_count() }}</strong> subscribers
 	  </li>
 	</ul>
   </aside>
+  {% if current_user.is_authenticated %}
+  {{ subscribe_button(gu, gu.has_subscriber(current_user)) }}
+  {% endif %}
 {% endmacro %}
 
 {% macro nav_user(user) %}
   <aside class="card">
     <h3>About <a href="{{ user.url() }}">{{ user.display_name or user.handle() }}</a></h3>
 	<ul>
-	{% if user.biography %}
+	  {% if user.biography %}
 	  <li>{{ icon('info') }} {{ user.biography }}</li>
+	  {% endif %}
+	  {% if current_user.is_authenticated and current_user.age() >= 18 and user.age() < 18 %}
+	  <li class="error">{{ icon('spoiler') }} MINOR</li>
 	  {% endif %}
 	</ul>
   </aside>
+  {% if user == current_user %}
+  <a href="/settings"><button class="card">{{ icon('settings') }} Settings</button></a>
+  {% elif current_user.is_authenticated %}
+  {{ block_button(user, current_user.has_blocked(user)) }}
+  {{ subscribe_button(user, user.has_subscriber(current_user)) }}
+  {% else %}
+  <aside class="card">
+    <p><a href="/login">Log in</a> to subscribe and interact with {{ user.handle() }}</p>
+  </aside>
+  {% endif %}
 {% endmacro %}
 
 {% macro nav_top_communities(top_communities) %}

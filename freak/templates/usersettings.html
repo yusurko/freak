@@ -29,7 +29,7 @@
   <h2>Appearance</h2>
   <div>
       <label>Color scheme</label>
-      <ul class="apply-theme">
+      <ul class="apply-theme grid">
         <li><input type="radio" id="US__color_scheme_dark" name="color_scheme" value="dark" {{ checked_if((current_user.color_theme // 256) == 2) }}><label for="US__color_scheme_dark">Dark</label></li>
         <li><input type="radio" id="US__color_scheme_light" name="color_scheme" value="light" {{ checked_if((current_user.color_theme // 256) == 1) }}><label for="US__color_scheme_light">Light</label></li>
         <li><input type="radio" id="US__color_scheme_unset" name="color_scheme" value="unset" {{ checked_if((current_user.color_theme // 256) == 0) }}><label for="US__color_scheme_unset">System</label></li>
@@ -37,7 +37,7 @@
     </div>
     <div>
       <label>Color theme</label>
-      <ul class="apply-theme">
+      <ul class="apply-theme grid">
       {% for color in colors %}
         <li><input type="radio" id="US__color_theme_{{ color.code }}" name="color_theme" value="{{ color.code }}" {{ checked_if((current_user.color_theme % 256) == color.code) }}><label for="US__color_theme_{{ color.code }}">{{ color.name }}</label></li>
       {% endfor %}

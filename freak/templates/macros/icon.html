@@ -3,9 +3,13 @@
 <i class="icon icon-{{ name }}{{ '_fill' if fill }}"></i>
 {% endmacro %}
 
-{% macro callout(useicon = "spoiler") %}
-<div class="callout">
+{% macro callout(useicon = "spoiler", classes = "") %}
+<div class="callout {{ classes }}">
   {{ icon(useicon) }}
   {{ caller() }}
 </div>
+{% endmacro %}
+
+{% macro big_icon(name, fill = False) %}
+<div class="big_icon">{{ icon(name, fill) }}</div>
 {% endmacro %}

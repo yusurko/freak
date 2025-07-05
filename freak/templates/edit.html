@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% from "macros/title.html" import title_tag with context %}
 {% from "macros/create.html" import privacy_select with context %}
+{% from "macros/icon.html" import icon, callout with context %}
 
 {% block title %}{{ title_tag('Editing: ' + p.title, False) }}{% endblock %}
 
@@ -16,10 +17,12 @@
       <span class="a11y">Text:</span>
       <textarea name="text" placeholder="What's happening?" class="create_text">{{ p.text_content }}</textarea></dd>
     </div>
-      <div>{{ privacy_select(p.privacy) }}</div>
-      <div><input type="submit" value="Save" /></dd>
+    <div>{{ privacy_select(p.privacy) }}</div>
+    <div>
+      <input type="submit" value="Save" />
     </div>
   </form>
+  <p class="error">{{ icon('delete') }} <a href="/delete/post/{{ p.id | to_b32l }}">Delete post</a></p>
 </div>
 
 {% endblock %}

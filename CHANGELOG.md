@@ -2,10 +2,13 @@
 
 ## 0.4.0
 
-- Added dependency to [SUOU](https://github.com/sakuragasaki46/suou)
-- Added user strikes, memberships and user blocks
+- Added dependency to [SUOU](https://github.com/sakuragasaki46/suou) library
+- Added user blocks
+- Added user strikes: a strike logs the content of a removed message for future use
+- Implemented guild subscriptions
+    + Blocking a user prevents them from seeing your comments, posts (standalone or in feed) and profile
 - Added ✨color themes✨
-- Users can now set their display name and biography in `/settings`
+- Users can now set their display name, biography and color theme in `/settings`
 
 ## 0.3.3
 

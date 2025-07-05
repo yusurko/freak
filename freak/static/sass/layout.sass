@@ -103,9 +103,9 @@ header.header
 // __ aside styles __ //
 aside.card
     overflow: hidden
-    > :first-child
+    > :is(h1, h2, h3, h4, h5, h6):first-child
         background-color: var(--accent)
-        padding: 12px
+        padding: 6px 12px 
         margin: -12px -12px 0 -12px
         position: relative
         a
@@ -120,6 +120,9 @@ aside.card
             padding: 12px
             &:last-child
                 border-bottom: none
+    > p
+        padding: 12px
+        margin: 0
 
 
 .flash
@@ -171,8 +174,6 @@ ul.message-options
     list-style: none
     padding: 0
     font-size: smaller
-    .comment-frame &
-        margin-bottom: -4px
 
 .post-frame
     margin-left: 3em
@@ -321,12 +322,30 @@ button, [type="submit"], [type="reset"], [type="button"]
 
 .comment-frame
     border: 1px solid var(--border)
-    padding: 12px
+    background: var(--background)
+    padding: 12px 12px 6px
     border-radius: 24px
     border-start-start-radius: 0
     min-width: 50%
     width: 0
-    margin-right: auto
+    margin-inline-end: auto
+    margin-bottom: 12px
+    position: relative
+    &::before
+        content: ''
+        border: 1px solid var(--border)
+        border-inline-end: 0
+        border-bottom: 0
+        background: var(--background)
+        height: 1em
+        width: 1em
+        position: absolute
+        left: calc(-1px - .5em)
+        top: -1px
+        transform: skewX(45deg)
+    li:has(> &)
+        list-style: none
+        
 
 .border-accent
     border: var(--accent) 1px solid
@@ -352,3 +371,8 @@ button.card
         background-color: var(--accent)
         color: var(--background)
 
+.big_icon
+    display: block
+    margin: 12px auto
+    font-size: 36px
+    text-align: center
