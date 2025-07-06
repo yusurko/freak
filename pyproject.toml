@@ -18,7 +18,7 @@ dependencies = [
     "PsycoPG2-binary",
     "libsass",
     "setuptools>=78.1.0",
-    "sakuragasaki46-suou>=0.3.4"
+    "sakuragasaki46-suou>=0.3.5"
 ]
 requires-python =  ">=3.10"
 classifiers = [
