@@ -4,6 +4,7 @@ import datetime
 from typing import Mapping
 from flask import Blueprint, abort, render_template, request, redirect, flash
 from flask_login import login_required, login_user, logout_user, current_user
+from werkzeug.exceptions import Forbidden
 from ..models import REPORT_REASONS, db, User
 from ..utils import age_and_days
 from sqlalchemy import select, insert
@@ -53,9 +54,13 @@ def validate_register_form() -> dict:
     try:
         f['gdpr_birthday'] = datetime.date.fromisoformat(request.form['birthday'])
 
+        if age_and_days(f['gdpr_birthday']) == (0, 0):
+            # block bot attempt to register
+            raise Forbidden
         if age_and_days(f['gdpr_birthday']) < (14,):
             f['banned_at'] = datetime.datetime.now()
             f['banned_reason'] = REPORT_REASONS['underage']
+        
     except ValueError:
         raise ValueError('Invalid date format')
     f['username'] = request.form['username'].lower()

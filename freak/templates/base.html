@@ -46,11 +46,11 @@
 		  {% if g.no_user %}
 		  <!-- no user -->
 		  {% elif current_user.is_authenticated %}
-		    <li>
+		    <li class="nomobile">
 			  <a class="round border-accent" href="/create" title="Create a post">
 				<i class="icon icon-add"></i>
 				<span class="a11y">create</span>
-				<span class="nomobile">New post</span>
+				<span>New post</span>
 		      </a>
 		    </li>
 		    <li><a href="{{ current_user.url() }}" title="{{ current_user.handle() }}'s profile">{{ icon('profile')}}<span class="a11y">profile</span></a>
@@ -99,6 +99,17 @@
 		<li><a href="https://github.com/sakuragasaki46/freak">GitHub</a></li>
 	  </ul>
 	</footer>
+	{% if current_user and current_user.is_authenticated %}
+	<footer class="mobile-nav mobileonly">
+	  <ul>
+	    <li><a href="/" title="Homepage">{{ icon('home') }}</a></li>
+		<li><a href="/search" title="Search">{{ icon('search') }}</a></li>
+		<li><a href="/create" title="Create">{{ icon('add') }}</a></li>
+		<li><a href="{{ current_user.url() }}" title="Messages">{{ icon('message') }}</a></li>
+		<li><a href="https://trollface.dk" title="Notifications">{{ icon('notification') }}</a></li>
+	  </ul>
+	</footer>
+	{% endif %}
 	<script>
 	  function changeAccentColorTime() {
         let hours = (new Date).getHours();
