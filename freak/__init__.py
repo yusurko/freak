@@ -17,6 +17,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from suou import Snowflake, ssv_list
 from werkzeug.routing import BaseConverter
 from sassutils.wsgi import SassMiddleware
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from suou.configparse import ConfigOptions, ConfigValue
 
@@ -36,6 +37,7 @@ class AppConfig(ConfigOptions):
     domain_name = ConfigValue()
     private_assets = ConfigValue(cast=ssv_list)
     jquery_url = ConfigValue(default='https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js')
+    app_is_behind_proxy = ConfigValue(cast=bool, default=False)
 
 app_config = AppConfig()
 
@@ -50,6 +52,12 @@ from .models import db, User, Post
 app.wsgi_app = SassMiddleware(app.wsgi_app, dict(
     freak=('static/sass', 'static/css', '/static/css', True)
 ))
+
+# proxy fix
+if app_config.app_is_behind_proxy:
+    app.wsgi_app = ProxyFix(
+        app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1
+    )
 
 class SlugConverter(BaseConverter):
     regex = r'[a-z0-9]+(?:-[a-z0-9]+)*'
