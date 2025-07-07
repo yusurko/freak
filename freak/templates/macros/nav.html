@@ -14,6 +14,9 @@
 	</ul>
   </aside>
   {% if current_user.is_authenticated %}
+  {% if current_user.moderates(gu) %}
+  <a href="{{ gu.url() }}/settings"><button class="card">{{ icon('settings') }} Mod Tools</button></a>
+  {% endif %}
   {{ subscribe_button(gu, gu.has_subscriber(current_user)) }}
   {% endif %}
 {% endmacro %}

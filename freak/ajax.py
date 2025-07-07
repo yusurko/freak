@@ -8,7 +8,7 @@ AJAX hooks for the website.
 import re
 from flask import Blueprint, abort, flash, redirect, request
 from sqlalchemy import delete, insert, select
-from .models import Guild, Member, UserBlock, db, User, Post, PostUpvote
+from .models import Guild, Member, UserBlock, db, User, Post, PostUpvote, username_is_legal
 from flask_login import current_user, login_required
 
 current_user: User
@@ -18,7 +18,7 @@ bp = Blueprint('ajax', __name__)
 @bp.route('/username_availability/<username>')
 @bp.route('/ajax/username_availability/<username>')
 def username_availability(username: str):
-    is_valid = re.fullmatch('[a-z0-9_-]+', username) is not None
+    is_valid = username_is_legal(username)
 
     if is_valid:
         user = db.session.execute(select(User).where(User.username == username)).scalar()
@@ -30,7 +30,7 @@ def username_availability(username: str):
     return {
         'status': 'ok',
         'is_valid': is_valid,
-        'is_available': is_available,
+        'is_available': is_available
     }
 
 @bp.route('/guild_name_availability/<username>')
@@ -47,7 +47,7 @@ def guild_name_availability(name: str):
     return {
         'status': 'ok',
         'is_valid': is_valid,
-        'is_available': is_available,
+        'is_available': is_available
     }
 
 @bp.route('/comments/<b32l:id>/upvote', methods=['POST'])

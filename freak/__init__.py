@@ -5,7 +5,7 @@ from sqlite3 import ProgrammingError
 from typing import Any
 import warnings
 from flask import (
-    Flask, g, render_template,
+    Flask, g, redirect, render_template,
     request, send_from_directory, url_for
 )
 import os
@@ -21,7 +21,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 from suou.configparse import ConfigOptions, ConfigValue
 
-from freak.colors import color_themes, theme_classes
+from .colors import color_themes, theme_classes
 
 __version__ = '0.4.0-dev27'
 
@@ -131,8 +131,18 @@ def error_400(body):
 def error_403(body):
     return render_template('403.html'), 403
 
+from .search import find_guild_or_user
+
 @app.errorhandler(404)
 def error_404(body):
+    try:
+        if mo := re.match(r'/([a-z0-9_-]+)/?', request.path):
+            alternative = find_guild_or_user(mo.group(1))
+            if alternative is not None:
+                return redirect(alternative), 302
+    except Exception as e:
+        warnings.warn(f'Exception in find_guild_or_user: {e}')
+        pass
     return render_template('404.html'), 404
 
 @app.errorhandler(405)

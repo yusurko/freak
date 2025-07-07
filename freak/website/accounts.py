@@ -1,3 +1,6 @@
+
+
+from __future__ import annotations
 import os, sys
 import re
 import datetime
@@ -9,6 +12,8 @@ from ..models import REPORT_REASONS, db, User
 from ..utils import age_and_days
 from sqlalchemy import select, insert
 from werkzeug.security import generate_password_hash
+
+current_user: User
 
 bp = Blueprint('accounts', __name__)
 
@@ -112,12 +117,13 @@ COLOR_SCHEMES = {'dark': 2, 'light': 1, 'system': 0, 'unset': 0}
 @login_required
 def settings():
     if request.method == 'POST':
-        user: User = current_user
+        changes = False
+        user = current_user
         color_scheme = COLOR_SCHEMES[request.form.get('color_scheme')] if 'color_scheme' in request.form else None
         color_theme = int(request.form.get('color_theme')) if 'color_theme' in request.form else None
         biography = request.form.get('biography')
         display_name = request.form.get('display_name')
-        changes = False
+        
         if display_name and display_name != user.display_name:
             changes, user.display_name = True, display_name.strip()
         if biography and biography != user.biography:

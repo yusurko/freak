@@ -3,10 +3,6 @@
 {% from "macros/title.html" import title_tag with context %}
 {% from "macros/nav.html" import nav_guild, nav_top_communities with context %}
 
-{# set feed_title = 'For you' if feed_type == 'foryou' and not feed_title %}
-{% set feed_title = 'Explore' if feed_type == 'explore' and not feed_title #}
-
-
 {% block title %}
 {{ title_tag(feed_title) }}
 {% endblock %}
@@ -24,7 +20,7 @@
 	{{ nav_guild(guild) }}
   {% endif %}
   
-  <aside class="card">
+  <aside class="card nomobile">
 	<h3>Don’t miss a post!</h3>
 	<ul>
 	  <li><strong><a id="notificationEnabler" href="#">Enable notifications</a></strong> to continue staying with us 😉</li>
@@ -42,13 +38,11 @@
 	{% endfor %}
 
 	{% if l.has_next %}
-	    {{ stop_scrolling(l.page) }}
+	  {{ stop_scrolling(l.page) }}
 	{% else %}
 		{{ no_more_scrolling(l.page) }}
 	{% endif %}
   </ul>
-
-  {# TODO: pagination #}
 {% endblock %}
 
 {% block scripts %}

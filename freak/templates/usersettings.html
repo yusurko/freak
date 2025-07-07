@@ -15,11 +15,9 @@
   <h2>Identification</h2>
     <div><label for="US__display_name">Full name:</label>
       <input type="text" name="display_name" id="US__display_name" value="{{ current_user.display_name or '' }}" />
-      
     </div>
     <div><label for="US__biography">Bio:</label>
       <textarea name="biography" id="US__biography">{{ current_user.biography or '' }}</textarea>
-      
     </div>
     <div>
       <button type="submit" class="primary">Save</button>

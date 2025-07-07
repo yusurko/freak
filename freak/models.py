@@ -6,6 +6,7 @@ from collections import namedtuple
 import datetime
 from functools import partial
 from operator import or_
+import re
 from threading import Lock
 from sqlalchemy import Column, Integer, String, ForeignKey, UniqueConstraint, text, \
     CheckConstraint, Date, DateTime, Boolean, func, BigInteger, \
@@ -61,6 +62,26 @@ REPORT_UPDATE_PENDING = 0
 REPORT_UPDATE_COMPLETE = 1
 REPORT_UPDATE_REJECTED = 2
 REPORT_UPDATE_ON_HOLD = 3
+
+USERNAME_RE = r'[a-z2-9_-][a-z0-9_-]+'
+
+ILLEGAL_USERNAMES = (
+    ## reserved for masspings and administrative claims
+    'me', 'everyone', 'here', 'admin', 'mod', 'modteam', 'moderator', 'sysop', 'room', 'all', 'any', 'nobody', 'deleted', 'suspended', 'owner', 'administrator', 'ai',
+    ## law enforcement corps and slurs because yes
+    'pedo', 'rape', 'rapist', 'nigger', 'retard', 'ncmec', 'police', 'cops', '911', 'childsafety', 'report', 'dmca'
+)
+
+def username_is_legal(username: str) -> bool:
+    if len(username) < 2 or len(username) > 100:
+        return False
+
+    if re.fullmatch(USERNAME_RE, username) is None:
+        return False
+    
+    if username in ILLEGAL_USERNAMES:
+        return False
+    return True
 
 ## END constants and enums
 
@@ -258,6 +279,21 @@ class User(Base):
     @timed_cache(60)
     def strike_count(self) -> int:
         return db.session.execute(select(func.count('*')).select_from(UserStrike).where(UserStrike.user_id == self.id)).scalar()
+
+    def moderates(self, gu: Guild) -> bool:
+        ## owner
+        if gu.owner_id == self.id:
+            return True
+        ## admin or global mod
+        if self.is_administrator:
+            return True
+        memb = db.session.execute(select(Member).where(Member.user_id == self.id, Member.guild_id == gu.id)).scalar()
+
+        if memb is None:
+            return False
+        return memb.is_moderator
+
+        ## TODO check banship?
 
 # UserBlock table is at the top !!
 

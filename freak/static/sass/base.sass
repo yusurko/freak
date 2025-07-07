@@ -26,7 +26,8 @@
     --light-text-alt: #444
     --light-border: #999
     --light-success: #73af00
-    --light-error: #e04433
+    --light-error: #e04830
+    --light-warning: #dea800
     --light-canvas: #eaecee
     --light-background: #f9f9f9 
     --light-bg-sharp: #fdfdff
@@ -35,7 +36,8 @@
     --dark-text-alt: #c0cad3
     --dark-border: #777
     --dark-success: #93cf00
-    --dark-error: #e04433
+    --dark-error: #e04830
+    --dark-warning: #dea800
     --dark-canvas: #0a0a0e
     --dark-background: #181a21 
     --dark-bg-sharp: #080808
@@ -51,6 +53,7 @@
     --border: var(--light-border)
     --success: var(--light-success)
     --error: var(--light-error)
+    --warning: var(--light-warning)
     --canvas: var(--light-canvas)
     --background: var(--light-background)
     --bg-sharp: var(--light-bg-sharp)
@@ -62,6 +65,7 @@
         --border: var(--dark-border)
         --success: var(--dark-success)
         --error: var(--dark-error)
+        --warning: var(--dark-warning)
         --canvas: var(--dark-canvas)
         --background: var(--dark-background)
         --bg-sharp: var(--dark-bg-sharp)
@@ -72,6 +76,7 @@
     --border: var(--light-border)
     --success: var(--light-success)
     --error: var(--light-error)
+    --warning: var(--light-warning)
     --canvas: var(--light-canvas)
     --background: var(--light-background)
     --bg-sharp: var(--light-bg-sharp)
@@ -82,6 +87,7 @@
     --border: var(--dark-border)
     --success: var(--dark-success)
     --error: var(--dark-error)
+    --warning: var(--dark-warning)
     --canvas: var(--dark-canvas)
     --background: var(--dark-background)
     --bg-sharp: var(--dark-bg-sharp)
@@ -186,3 +192,17 @@ img
 
 .faint
     opacity: .75
+    strong &
+        font-weight: 400
+
+.callout
+    color: var(--text-alt)
+
+.success
+    color: var(--success)
+
+.error
+    color: var(--error)
+
+.warning
+    color: var(--warning)

@@ -3,11 +3,12 @@
 ## 0.4.0
 
 - Added dependency to [SUOU](https://github.com/sakuragasaki46/suou) library
-- Added user blocks
+- Users can now block each other
+    + Blocking a user prevents them from seeing your comments, posts (standalone or in feed) and profile
 - Added user strikes: a strike logs the content of a removed message for future use
 - Posts may now be deleted by author. If it has comments, comments are not spared
+- Moderators (and admins) have now access to mod tools
 - Implemented guild subscriptions
-    + Blocking a user prevents them from seeing your comments, posts (standalone or in feed) and profile
 - Added ✨color themes✨
 - Users can now set their display name, biography and color theme in `/settings`
 

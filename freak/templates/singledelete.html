@@ -16,7 +16,7 @@
       <p>You are about to delete <u>permanently</u> <a href="{{ p.url() }}">your post on {{ p.topic_or_user().handle() }}</a>.</p>
       {% call callout('spoiler', 'error') %}This action <u><b>cannot be undone</b></u>.{% endcall %}
       {% if (p.comments | count) %}
-      {% call callout('spoiler') %}Your post has <strong>{{ (p.comments | count) }} comments</strong>.  Your post will be deleted <u>along with ALL the comments</u>.{% endcall %}
+      {% call callout('spoiler', 'warning') %}Your post has <strong>{{ (p.comments | count) }} comments</strong>.  Your post will be deleted <u>along with ALL the comments</u>.{% endcall %}
       {% endif %}
     </div>
     <div>
