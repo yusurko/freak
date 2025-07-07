@@ -1,0 +1,29 @@
+{% extends "admin/admin_base.html" %}
+{% from "macros/feed.html" import stop_scrolling, no_more_scrolling with context %}
+
+{% block content %}
+  <ul>
+  {% for u in user_list %}
+    <li>
+      <p><a href="{{ u.url() }}">{{ u.handle() }}</a> (#{{ u.id | to_b32l }})
+        {%- if u.is_administrator %}
+          <span>(Admin)</span>
+        {% endif -%}
+        {% if u == current_user %}
+          <span>(You)</span>
+        {% endif -%}
+      </p>
+      <ul class="inline">
+        <li>Age: {{ u.age() }} years old ({{ u.gdpr_birthday.strftime("%B %d, %Y") }})</li>
+        <li>Registered at: {{ u.joined_at }}</li>
+        <li>Registered from IP address: {{ u.joined_ip }}</li>
+      </ul>
+    </li>
+  {% endfor %}
+  {% if user_list.has_next %}
+    {{ stop_scrolling(user_list.page) }}
+  {% else %}
+    {{ no_more_scrolling(user_list.page) }}
+  {% endif %}
+  </ul>
+{% endblock %}

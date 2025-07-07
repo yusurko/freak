@@ -22,7 +22,7 @@ from suou.configparse import ConfigOptions, ConfigValue
 
 from freak.colors import color_themes, theme_classes
 
-__version__ = '0.4.0-dev24'
+__version__ = '0.4.0-dev27'
 
 APP_BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 

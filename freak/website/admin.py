@@ -146,3 +146,11 @@ def strikes():
     strike_list = db.paginate(select(UserStrike).order_by(UserStrike.id.desc()))
     return render_template('admin/admin_strikes.html',
     strike_list=strike_list, report_reasons=REPORT_REASON_STRINGS)
+
+
+@bp.route('/admin/users/')
+@admin_required
+def users():
+    user_list = db.paginate(select(User).order_by(User.joined_at.desc()))
+    return render_template('admin/admin_users.html',
+    user_list=user_list)
