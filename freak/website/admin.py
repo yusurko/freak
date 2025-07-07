@@ -30,6 +30,21 @@ TARGET_TYPES = {
     Comment: REPORT_TARGET_COMMENT
 }
 
+def account_status_string(u: User):
+    if u.is_active:
+        return 'Active'
+    elif u.banned_at:
+        s = 'Suspended'
+        if u.banned_until:
+            s += f' until {u.banned_until:%b %d, %Y %H:%M}'
+        if u.banned_reason in REPORT_REASON_STRINGS:
+            s += f' ({REPORT_REASON_STRINGS[u.banned_reason]})'
+        return s
+    elif u.is_disabled_by_user:
+        return 'Paused'
+    else:
+        return 'Inactive'
+
 def remove_content(target, reason_code: int):
     if isinstance(target, Post):
         target.removed_at = datetime.datetime.now()
@@ -153,4 +168,4 @@ def strikes():
 def users():
     user_list = db.paginate(select(User).order_by(User.joined_at.desc()))
     return render_template('admin/admin_users.html',
-    user_list=user_list)
+    user_list=user_list, account_status_string=account_status_string)

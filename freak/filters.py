@@ -40,3 +40,9 @@ def append(text, l: list):
     l.append(text)
     return None
 
+@app.template_filter()
+def faint_paren(text: str):
+    if not '(' in text:
+        return text
+    t1, t2, t3 = text.partition('(')
+    return Markup('{0} <span class="faint">{1}</span>').format(t1, t2 + t3)

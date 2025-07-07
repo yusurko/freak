@@ -15,8 +15,9 @@
       </p>
       <ul class="inline">
         <li>Age: {{ u.age() }} years old ({{ u.gdpr_birthday.strftime("%B %d, %Y") }})</li>
-        <li>Registered at: {{ u.joined_at }}</li>
+        <li>Registered at: {{ u.joined_at.strftime("%B %d, %Y %H:%M %z") }}</li>
         <li>Registered from IP address: {{ u.joined_ip }}</li>
+        <li>Status: {{ account_status_string(u) | faint_paren }}</li>
       </ul>
     </li>
   {% endfor %}
