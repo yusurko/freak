@@ -245,7 +245,6 @@ class User(Base):
         target_id = target
 
         qq= ~select(UserBlock).where(UserBlock.c.actor_id == actor_id, UserBlock.c.target_id == target_id).exists()
-        print(qq)
         return qq
 
     def recompute_karma(self):
@@ -437,7 +436,7 @@ class Comment(Base):
     id = snowflake_column()
 
     author_id = Column(BigInteger, ForeignKey('freak_user.id', name='comment_author_id'), nullable=True)
-    parent_post_id = Column(BigInteger, ForeignKey('freak_post.id', name='comment_parent_post_id'), nullable=False)
+    parent_post_id = Column(BigInteger, ForeignKey('freak_post.id', name='comment_parent_post_id', ondelete='cascade'), nullable=False)
     parent_comment_id = Column(BigInteger, ForeignKey('freak_comment.id', name='comment_parent_comment_id'), nullable=True)
     text_content = Column(String(16384), nullable=False)
     created_at = Column(DateTime, server_default=func.current_timestamp(), index=True)

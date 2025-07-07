@@ -17,6 +17,9 @@ blueprints.append(bp)
 from .edit import bp
 blueprints.append(bp)
 
+from .delete import bp
+blueprints.append(bp)
+
 from .about import bp
 blueprints.append(bp)
 

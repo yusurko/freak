@@ -14,7 +14,7 @@ bp = Blueprint('edit', __name__)
 @bp.route('/edit/post/<b32l:id>', methods=['GET', 'POST'])
 @login_required
 def edit_post(id):
-    p: Post | None = db.session.execute(select(Post).where(Post.id == id)).scalar()
+    p: Post | None = db.session.execute(select(Post).where(Post.id == id, Post.author == current_user)).scalar()
 
     if p is None:
         abort(404)

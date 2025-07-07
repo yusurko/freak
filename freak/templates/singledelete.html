@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "macros/title.html" import title_tag with context %}
+{% from "macros/icon.html" import icon, callout with context %}
+
+{% block title %}{{ title_tag('Confirm deletion: ' + p.title, False) }}{% endblock %}
+
+{% block heading %}
+<h2><span class="faint">Confirm deletion:</span> {{ p.title }}</h2>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <form action="/delete/post/{{ p.id | to_b32l }}" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div>
+      <p>You are about to delete <u>permanently</u> <a href="{{ p.url() }}">your post on {{ p.topic_or_user().handle() }}</a>.</p>
+      {% call callout('spoiler', 'error') %}This action <u><b>cannot be undone</b></u>.{% endcall %}
+      {% if (p.comments | count) %}
+      {% call callout('spoiler') %}Your post has <strong>{{ (p.comments | count) }} comments</strong>.  Your post will be deleted <u>along with ALL the comments</u>.{% endcall %}
+      {% endif %}
+    </div>
+    <div>
+      <button type="submit" class="primary">{{ icon('delete') }} Delete</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
