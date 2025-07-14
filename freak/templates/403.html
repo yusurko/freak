@@ -1,7 +1,8 @@
 {% extends "base.html" %}
+{% from "macros/title.html" import title_tag with context %}
 
 {% block title %}
-  <title>X _ X; on {{ app_name }}</title>
+  <title>{{ title_tag('X _ X') }}</title>
 {% endblock %}
 
 {% block body %}

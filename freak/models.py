@@ -66,10 +66,19 @@ REPORT_UPDATE_ON_HOLD = 3
 USERNAME_RE = r'[a-z2-9_-][a-z0-9_-]+'
 
 ILLEGAL_USERNAMES = (
-    ## reserved for masspings and administrative claims
-    'me', 'everyone', 'here', 'admin', 'mod', 'modteam', 'moderator', 'sysop', 'room', 'all', 'any', 'nobody', 'deleted', 'suspended', 'owner', 'administrator', 'ai',
+    ## masspings and administrative claims
+    'me', 'everyone', 'here', 'room', 'all', 'any', 'founder', 'owner',
+    'admin', 'administrator', 'mod', 'modteam', 'moderator', 'sysop', 'server', 'app'
+    ## fictitious users and automations
+    'nobody', 'deleted', 'suspended',  'default', 'bot', 'developer', 'undefined', 'null', 
+    'ai', 'automod', 'automoderator', 'assistant', 'privacy', 'anonymous', 'removed'
     ## law enforcement corps and slurs because yes
-    'pedo', 'rape', 'rapist', 'nigger', 'retard', 'ncmec', 'police', 'cops', '911', 'childsafety', 'report', 'dmca'
+    'pedo', 'rape', 'rapist', 'nigger', 'retard', 'ncmec', 'police', 'cops', '911', 'childsafety',
+    'report', 'dmca', 'login', 'logout', 'security', 'order66', 'gestapo', 'ss', 'hitler',
+    'pedophile', 'lolicon', 'giphy', 'tenor', 'csam', 'cp', 'pedobear', 'lolita',
+    'loli', 'kkk', 'pnf', 'adl', 'cop', 'tranny', 'google', 'trustandsafety', 'safety', 'ice',
+    ## VVVVIP
+    'potus', 'realdonaldtrump', 'elonmusk', 'teddysphotos', 'mrbeast', 'jkrowling'
 )
 
 def username_is_legal(username: str) -> bool:

@@ -23,6 +23,7 @@ disabled=""
 {% endmacro %}
 
 {% macro comment_area(url) %}
+{% if current_user.is_authenticated %}
 <form id="comment-area" class="boundaryless" action="{{ url }}" method="POST" enctype="multipart/form-data">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
   <input type="hidden" name="reply_to" value="" />
@@ -34,4 +35,7 @@ disabled=""
     <button type="submit" class="primary">Publish</button>
   </div>
 </form>
+{% else %}
+<div class="centered"><a href="/login">Log in</a> to leave a comment</div>
+{% endif %}
 {% endmacro %}
