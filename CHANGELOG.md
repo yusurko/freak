@@ -8,6 +8,7 @@
 - Added user strikes: a strike logs the content of a removed message for future use
 - Posts may now be deleted by author. If it has comments, comments are not spared
 - Moderators (and admins) have now access to mod tools
+    + Allowed operations: change display name, description, restriction status, and exile (guild-local ban) members
 - Implemented guild subscriptions
 - Added ✨color themes✨
 - Users can now set their display name, biography and color theme in `/settings`

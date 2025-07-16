@@ -8,7 +8,7 @@ from functools import partial
 from operator import or_
 import re
 from threading import Lock
-from sqlalchemy import Column, Integer, String, ForeignKey, UniqueConstraint, text, \
+from sqlalchemy import Column, Integer, String, ForeignKey, UniqueConstraint, insert, text, \
     CheckConstraint, Date, DateTime, Boolean, func, BigInteger, \
     SmallInteger, select, update, Table
 from sqlalchemy.orm import Relationship, relationship
@@ -78,7 +78,7 @@ ILLEGAL_USERNAMES = (
     'pedophile', 'lolicon', 'giphy', 'tenor', 'csam', 'cp', 'pedobear', 'lolita',
     'loli', 'kkk', 'pnf', 'adl', 'cop', 'tranny', 'google', 'trustandsafety', 'safety', 'ice',
     ## VVVVIP
-    'potus', 'realdonaldtrump', 'elonmusk', 'teddysphotos', 'mrbeast', 'jkrowling'
+    'potus', 'realdonaldtrump', 'elonmusk', 'teddysphotos', 'mrbeast', 'jkrowling', 'pewdiepie'
 )
 
 def username_is_legal(username: str) -> bool:
@@ -308,6 +308,8 @@ class User(Base):
 
 ## END User
 
+ModeratorInfo = namedtuple('ModeratorInfo', 'user is_owner')
+
 class Guild(Base):
     __tablename__ = 'freak_topic'
     __table_args__ = (
@@ -340,12 +342,42 @@ class Guild(Base):
         return db.session.execute(select(func.count('*')).select_from(Member).where(Member.guild == self, Member.is_subscribed == True)).scalar()
 
     # utilities
+    owner = relationship(User, foreign_keys=owner_id)
     posts = relationship('Post', back_populates='guild')
 
     def has_subscriber(self, other: User) -> bool:
         if other is None or not other.is_authenticated:
             return False
         return bool(db.session.execute(select(Member).where(Member.user_id == other.id, Member.guild_id == self.id, Member.is_subscribed == True)).scalar())
+
+    def has_exiled(self, other: User) -> bool:
+        if other is None or not other.is_authenticated:
+            return False
+        u = db.session.execute(select(Member).where(Member.user_id == other.id, Member.guild_id == self.id)).scalar()
+        return u.is_banned if u else False
+
+    def moderators(self):
+        if self.owner:
+            yield ModeratorInfo(self.owner, True)
+        for mem in db.session.execute(select(Member).where(Member.guild_id == self.id, Member.is_moderator == True)).scalars():
+            if mem.user != self.owner and not mem.user.is_banned:
+                yield ModeratorInfo(mem.user, False)
+    
+    def update_member(self, u: User | Member, /, **values):
+        if isinstance(u, User):
+            m = db.session.execute(select(Member).where(Member.user_id == u.id, Member.guild_id == self.id)).scalar()
+            if m is None:
+                return db.session.execute(insert(Member).values(
+                    guild_id = self.id,
+                    user_id = u.id,
+                    **values
+                ).returning(Member)).scalar()
+        else:
+            m = u
+        if len(values):
+            db.session.execute(update(Member).where(Member.user_id == u.id, Member.guild_id == self.id).values(**values))
+        return m
+        
 
 Topic = deprecated('renamed to Guild')(Guild)
 

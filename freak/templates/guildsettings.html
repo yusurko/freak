@@ -14,12 +14,42 @@
   <section class="card">
     <h2>Community Identity</h2>
     <div>
-      <label for="GS__display_name">Display name:</label>
-      <input type="text" name="display_name" id="GS__display_name" value="{{ gu.display_name or '' }}" />
+      <label>Display name:
+      <input type="text" name="display_name" value="{{ gu.display_name or '' }}" />
+      </label>
     </div>
     <div>
-      <label for="GS__description">Description:</label>
-      <textarea name="description" id="GS__description">{{ gu.description or '' }}</textarea>
+      <label>Description:
+      <textarea name="description">{{ gu.description or '' }}</textarea>
+      </label>
+    </div>
+    <div>
+      <button type="submit" class="primary">Save</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Safety</h2>
+    <div>
+      <label>
+        <input type="checkbox" name="restricted" value="1" {{ checked_if(gu.is_restricted) }} />
+        Allow only approved members to post and comment
+      </label>
+    </div>
+    <div>
+      <label>
+        Ban user from participating in {{ gu.handle() }}:
+        <input type="text" name="exile_name" placeholder="username" />
+      </label>
+      <label>
+        <input type="checkbox" name="exile_reverse" value="1" />
+        Remove ban on given user
+      </label>
+      <small class="faint">
+        Bans (aka: exiles) are permanent and reversible.<br />
+        Banned (exiled) users are not allowed to post or comment on {{ gu.handle() }}.<br />
+        Reverse the ban by checking “Remove ban on given user”.
+      </small>
     </div>
     <div>
       <button type="submit" class="primary">Save</button>

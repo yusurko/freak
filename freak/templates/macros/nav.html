@@ -18,6 +18,31 @@
   <a href="{{ gu.url() }}/settings"><button class="card">{{ icon('settings') }} Mod Tools</button></a>
   {% endif %}
   {{ subscribe_button(gu, gu.has_subscriber(current_user)) }}
+  {% if not gu.owner %}
+  <aside class="card">
+    <p class="centered">{{ gu.handle() }} is currently unmoderated</p>
+  </aside>
+  {% elif gu.has_exiled(current_user) %}
+  <aside class="card">
+    <p class="centered">Moderator list is hidden because you are banned.</p>
+    <!-- TODO appeal button -->
+  </aside>
+  {% else %}
+  <aside class="card">
+    <h3>Moderators of {{ gu.handle() }}</h3>
+    <div>
+      <ul>
+        {% for moder in gu.moderators() %}
+        <li><a href="{{ moder.user.url() }}">{{ moder.user.handle() }}</a>
+        {% if moder.is_owner %}
+        <span>{{ icon('mod_mode') }} <small>Owner</small></span>
+        {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </aside>
+  {% endif %}
   {% endif %}
 {% endmacro %}
 
