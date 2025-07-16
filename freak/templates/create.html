@@ -16,11 +16,10 @@
       <p>Posting as <strong>{{ current_user.handle() }}</strong></p>
       <p>Post to: <input type="text" name="to" placeholder="{{ current_user.handle() }}"></p>
       <div>
-        <span class="a11y">Title:</span><input type="text" name="title" placeholder="An interesting title" maxlength="256">
+        <input type="text" name="title" placeholder="An interesting title" maxlength="256" class="fullwidth" />
       </div>
       <div>
-        <span class="a11y">Text:</span>
-        <textarea name="text" placeholder="What's happening?" class="create_text">{{ request.args['preload'] }}</textarea>
+        <textarea name="text" placeholder="What's happening?" class="create_text fullwidth">{{ request.args['preload'] }}</textarea>
       </div>
       {#<dd id="fileInputContainer"><a href="javascript:attachFileInput();">Add a file...</a>#}
       <div>{{ privacy_select() }}</div>

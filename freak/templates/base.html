@@ -38,8 +38,8 @@
 				<input type="search" name="q" placeholder="Search among {{ post_count }} posts…">
 				<input type="submit" value="Search">
 			</form>
-			<a href="/search">
-			  <i class="icon icon-search"></i><span class="a11y">search</span>
+			<a href="/search" aria-label="Search" title="Search">
+			  {{ icon('search') }}
 		  	</a>
 		  </li>
 		  {% endif %}
@@ -47,26 +47,32 @@
 		  <!-- no user -->
 		  {% elif current_user.is_authenticated %}
 		    <li class="nomobile">
-			  <a class="round border-accent" href="/create" title="Create a post">
-				<i class="icon icon-add"></i>
-				<span class="a11y">create</span>
+			  <a class="round border-accent" href="/create" title="Create a post" aria-label="Create a post">
+				{{ icon('add') }}
 				<span>New post</span>
 		      </a>
 		    </li>
-		    <li><a href="{{ current_user.url() }}" title="{{ current_user.handle() }}'s profile">{{ icon('profile')}}<span class="a11y">profile</span></a>
+			{% if current_user.is_administrator %}
+			<li class="nomobile">
+			  <a href="/admin" title="Admin Tools" aria-label="Admin Tools">
+			    {{ icon('mod') }}
+			  </a>
+			</li>
+			{% endif %}
+		    <li><a href="{{ current_user.url() }}" title="{{ current_user.handle() }}'s profile" aria-label="User profile">{{ icon('profile') }}</a>
 			<div class="header-username">
 			  <strong class="header-username-name">{{ current_user.handle() }}</strong>
 			  <span class="header-username-karma">{{ icon('karma') }} {{ current_user.karma }} karma</span>
 			</div></li>
-		  <li><a href="/logout" title="Log out">
-			  {{ icon('logout') }} <span class="a11y">log out</span>
+		  <li><a href="/logout" title="Log out" aria-label="Log out">
+			  {{ icon('logout') }}
 		  </a></li>
 		  {% else %}
-		  <li><a href="/login" title="Log in">
-			  {{ icon('logout') }}<span class="a11y">log in</span>
+		  <li><a href="/login" title="Log in" aria-label="Log in">
+			  {{ icon('logout') }}
 		  </a></li>
-		  <li><a href="/register" title="Register">
-			  {{ icon('join') }}<span class="a11y">register</span>
+		  <li><a href="/register" title="Create account" aria-label="Create account">
+			  {{ icon('join') }}
 		  </a></li>
 		  {% endif %}
 		</ul>

@@ -39,7 +39,7 @@ class AppConfig(ConfigOptions):
     private_assets = ConfigValue(cast=ssv_list)
     jquery_url = ConfigValue(default='https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js')
     app_is_behind_proxy = ConfigValue(cast=bool, default=False)
-    impressum = ConfigValue(cast=twocolon_list, default=None)
+    impressum = ConfigValue(cast=twocolon_list, default='')
 
 app_config = AppConfig()
 

@@ -26,22 +26,22 @@
 {% macro feed_upvote(postid, count, uservote=0) %}
   <div class="upvote-button" data-endpoint="{{ postid|to_b32l }}">
 	{% if uservote > 0 %}
-	<a href="javascript:void 0" class="upvote-button-up active">
-	  <i class="icon icon-upvote_fill"></i><span class="a11y">upvoted</span>
+	<a href="javascript:void 0" class="upvote-button-up active" aria-label="upvoted">
+	  {{ icon('upvote', True) }}
 	</a>
 	{% else %}
-	<a href="javascript:void 0" class="upvote-button-up">
-	  <i class="icon icon-upvote"></i><span class="a11y">upvote</span>
+	<a href="javascript:void 0" class="upvote-button-up" aria-label="upvote">
+	  {{ icon('upvote') }}
 	</a>
 	{% endif %}
 	<strong class="upvote-count">{{ count }}</strong>
 	{% if uservote < 0 %}
-	<a href="javascript:void 0" class="upvote-button-down active">
-	  <i class="icon icon-downvote_fill"></i><span class="a11y">downvoted</span>
+	<a href="javascript:void 0" class="upvote-button-down active" aria-label="downvoted">
+	  {{ icon('downvote', True) }}
 	</a>
 	{% else %}
-	<a href="javascript:void 0" class="upvote-button-down">
-	  <i class="icon icon-downvote"></i><span class="a11y">downvote</span>
+	<a href="javascript:void 0" class="upvote-button-down" aria-label="downvote">
+	  {{ icon('downvote') }}
 	</a>
 	{% endif %}
   </div>
@@ -86,9 +86,8 @@
 
 {% macro comment_count(c) %}
 <div class="comment-count">
-  <a><i class="icon icon-comment"></i></a>
+  <a aria-label="Comments">{{ icon('comment') }}</a>
   <strong>{{ c }}</strong>
-  <span class="a11y">comments</span>
 </div>
 {% endmacro %}
 

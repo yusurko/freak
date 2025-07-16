@@ -10,9 +10,9 @@
     <link rel="stylesheet" href="{{ private_style }}" />
     {% endfor %}
   </head>
-  <body class="admin">
+  <body class="admin {{ theme_classes(current_user.color_theme) }}">
     <header class="header">
-      <h1><a href="{{ url_for('admin.homepage') }}"><span class="faint">{{ app_name }}:</span> Admin</a></h1>
+      <h1><span class="faint">{{ app_name }}:</span> <a href="{{ url_for('admin.homepage') }}">Admin</a></h1>
     </header>
     <div class="content">
       {% for message in get_flashed_messages() %}
