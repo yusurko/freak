@@ -360,18 +360,21 @@ class Guild(Base):
         if self.owner:
             yield ModeratorInfo(self.owner, True)
         for mem in db.session.execute(select(Member).where(Member.guild_id == self.id, Member.is_moderator == True)).scalars():
-            if mem.user != self.owner and not mem.user.is_banned:
+            if mem.user != self.owner and not mem.is_banned:
                 yield ModeratorInfo(mem.user, False)
     
     def update_member(self, u: User | Member, /, **values):
         if isinstance(u, User):
             m = db.session.execute(select(Member).where(Member.user_id == u.id, Member.guild_id == self.id)).scalar()
             if m is None:
-                return db.session.execute(insert(Member).values(
+                m = db.session.execute(insert(Member).values(
                     guild_id = self.id,
                     user_id = u.id,
                     **values
                 ).returning(Member)).scalar()
+                if m is None:
+                    raise RuntimeError
+                return m
         else:
             m = u
         if len(values):

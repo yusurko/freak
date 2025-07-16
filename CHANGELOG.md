@@ -9,9 +9,12 @@
 - Posts may now be deleted by author. If it has comments, comments are not spared
 - Moderators (and admins) have now access to mod tools
     + Allowed operations: change display name, description, restriction status, and exile (guild-local ban) members
-- Implemented guild subscriptions
+    + Site administrators and guild owners can add moderators
+- Administrators can claim ownership of abandoned guilds
+- Implemented guild subscriptions (not as in $$$, yes as in the follow button)
 - Added ✨color themes✨
 - Users can now set their display name, biography and color theme in `/settings`
+- You can now add an impressum in .env, e.g. `IMPRESSUM='Acme Ltd.::1 Short Island::Old York, Divided States::Responsible: ::Donald Duck'` Lines are separated by two colons. Version before 0.4.0 CAN'T BE RUN in German-speaking countries as of 2025.
 
 ## 0.3.3
 

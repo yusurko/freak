@@ -38,3 +38,8 @@ def timed_cache(ttl: int, maxsize: int = 128, typed: bool = False):
 
 def is_b32l(username: str) -> bool:
     return re.fullmatch(r'[a-z2-7]+', username)
+
+def twocolon_list(s: str | None) -> list[str]:
+    if not s:
+        return []
+    return [x.strip() for x in s.split('::')]

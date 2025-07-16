@@ -1,0 +1,14 @@
+
+services:
+  freak:
+    build:
+      context: .
+    image: freak
+    ports:
+      - 5000:5000
+    volumes:
+      - .:/opt/live-app:ro
+    extra_hosts:
+      - 'postgres.docker.internal:172.17.0.1'
+    restart: on-failure:3
+

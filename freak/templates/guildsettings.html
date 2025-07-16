@@ -1,14 +1,30 @@
 {% extends "base.html" %}
+{% from "macros/icon.html" import icon with context %}
 {% from "macros/title.html" import title_tag with context %}
 {% from "macros/create.html" import checked_if with context %}
 
 {% block title %}{{ title_tag('Settings for ' + gu.handle()) }}{% endblock %}
 
 {% block heading %}
-<h1><span class="faint">Settings:</span> {{ gu.handle() }}</h1>
+<h1><span class="faint">Settings:</span> <a href="{{ gu.url() }}">{{ gu.handle() }}</a></h1>
 {% endblock %}
 
 {% block content %}
+
+{% if gu.owner == None and current_user.is_administrator %}
+<form method="POST">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+  <input type="hidden" name="transfer_owner" value="{{ current_user.username }}" />
+  <section class="card">
+    <h2 class="error">{{ icon('spoiler') }} {{ gu.handle() }} is <u>unmoderated</u></h2>
+
+    <div>
+      <button type="submit" class="primary">Claim ownership</button>
+    </div>
+  </section>
+</form>
+{% endif %}
+
 <form method="POST">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
   <section class="card">
@@ -51,6 +67,26 @@
         Reverse the ban by checking “Remove ban on given user”.
       </small>
     </div>
+    <div>
+      <button type="submit" class="primary">Save</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Management</h2>
+    <!-- TODO: make moderation consensual -->
+    {% if gu.owner == current_user or current_user.is_administrator %}
+    <div>
+      <label>
+        Add user as moderator:
+        <input type="text" name="moderator_name" placeholder="username" />
+      </label><br />
+      <label>
+        <input type="checkbox" name="moderator_consent" value="1" autocomplete="off" />
+        <u>I understand that new moderators may damage my community and the above user is trusted</u>
+      </label>
+    </div>
+    {% endif %}
     <div>
       <button type="submit" class="primary">Save</button>
     </div>

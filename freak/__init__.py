@@ -22,6 +22,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from suou.configparse import ConfigOptions, ConfigValue
 
 from .colors import color_themes, theme_classes
+from .utils import twocolon_list
 
 __version__ = '0.4.0-dev28'
 
@@ -38,6 +39,7 @@ class AppConfig(ConfigOptions):
     private_assets = ConfigValue(cast=ssv_list)
     jquery_url = ConfigValue(default='https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js')
     app_is_behind_proxy = ConfigValue(cast=bool, default=False)
+    impressum = ConfigValue(cast=twocolon_list, default=None)
 
 app_config = AppConfig()
 
@@ -97,7 +99,8 @@ def _inject_variables():
         'post_count': Post.count(),
         'user_count': User.active_count(),
         'colors': color_themes,
-        'theme_classes': theme_classes
+        'theme_classes': theme_classes,
+        'impressum': '\n'.join(app_config.impressum).replace('_', ' ')
     }
 
 @login_manager.user_loader
