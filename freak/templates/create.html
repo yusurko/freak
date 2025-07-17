@@ -14,15 +14,16 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div>
       <p>Posting as <strong>{{ current_user.handle() }}</strong></p>
-      <p>Post to: <input type="text" name="to" placeholder="{{ current_user.handle() }}"></p>
+      <p>Post to: <input type="text" name="to" placeholder="{{ current_user.handle() }}" value="{{ sv_target }}"></p>
       <div>
-        <input type="text" name="title" placeholder="An interesting title" maxlength="256" class="fullwidth" />
+        <input type="text" name="title" placeholder="An interesting title" maxlength="256" class="fullwidth" value="{{ sv_title }}" />
       </div>
+      <hr />
       <div>
-        <textarea name="text" placeholder="What's happening?" class="create_text fullwidth">{{ request.args['preload'] }}</textarea>
+        <textarea name="text" placeholder="What's happening ~" class="create_text fullwidth">{{ sv_content }}</textarea>
       </div>
       {#<dd id="fileInputContainer"><a href="javascript:attachFileInput();">Add a file...</a>#}
-      <div>{{ privacy_select() }}</div>
+      <div>{{ privacy_select(sv_privacy) }}</div>
       <div><button type="submit" class="primary">Create</button></div>
     </div>
   </form>

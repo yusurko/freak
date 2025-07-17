@@ -220,8 +220,8 @@ class User(Base):
             db.session.commit()
 
     def can_create_guild(self):
-        ## TODO make guild creation requirements configurable
-        return self.karma > 15 or self.is_administrator
+        ## TODO make guild creation requirements fully configurable
+        return self.karma > app_config.create_guild_threshold or self.is_administrator
 
     can_create_community = deprecated('use .can_create_guild()')(can_create_guild)
 
@@ -355,6 +355,19 @@ class Guild(Base):
             return False
         u = db.session.execute(select(Member).where(Member.user_id == other.id, Member.guild_id == self.id)).scalar()
         return u.is_banned if u else False
+
+    def allows_posting(self, other: User) -> bool:
+        if self.owner is None:
+            return False
+        if other.is_disabled:
+            return False
+        mem: Member | None = db.session.execute(select(Member).where(Member.user_id == other.id, Member.guild_id == self.id)).scalar() if other else None
+        if mem and mem.is_banned:
+            return False
+        if self.is_restricted:
+            return mem and mem.is_approved
+        return True
+
 
     def moderators(self):
         if self.owner:

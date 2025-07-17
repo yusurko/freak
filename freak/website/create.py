@@ -7,7 +7,20 @@ from flask_login import current_user, login_required
 from sqlalchemy import insert, select
 from ..models import User, db, Guild, Post
 
+current_user: User
+
 bp = Blueprint('create', __name__)
+
+def create_savepoint(
+    target = '', title = '',  content = '',
+    privacy = 0
+):
+    return render_template('create.html',
+        sv_target = target,
+        sv_title = title,
+        sv_content = content,
+        sv_privacy = privacy
+    )
 
 @bp.route('/create/', methods=['GET', 'POST'])
 @login_required
@@ -15,15 +28,22 @@ def create():
     user: User = current_user
     if request.method == 'POST' and 'title' in request.form:
         gname = request.form['to']
-        if gname:
-            guild: Guild | None = db.session.execute(select(Guild).where(Guild.name == gname)).scalar()
-            if guild is None:
-                flash(f'Guild +{gname} not found or inaccessible, posting to your user page instead')
-        else:
-            guild = None
         title = request.form['title']
         text = request.form['text']
         privacy = int(request.form.get('privacy', '0'))
+        if gname:
+            guild: Guild | None = db.session.execute(select(Guild).where(Guild.name == gname)).scalar()
+            if guild is None:
+                flash(f'Guild +{gname} not found or inaccessible')
+                return create_savepoint('', title, text, privacy)
+            if guild.has_exiled(user):
+                flash(f'You are banned from +{gname}')
+                return create_savepoint('', title, text, privacy)
+            if not guild.allows_posting(user):
+                flash(f'You can\'t post on +{gname}')
+                return create_savepoint('', title, text, privacy)
+        else:
+            guild = None
         try:
             new_post: Post = db.session.execute(insert(Post).values(
                 author_id = user.id,
@@ -40,7 +60,7 @@ def create():
         except Exception as e:
             sys.excepthook(*sys.exc_info())
             flash('Unable to publish!')
-    return render_template('create.html')
+    return create_savepoint(target=request.args.get('on',''))
 
 
 @bp.route('/createguild/', methods=['GET', 'POST'])

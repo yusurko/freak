@@ -6,15 +6,18 @@
 - Users can now block each other
     + Blocking a user prevents them from seeing your comments, posts (standalone or in feed) and profile
 - Added user strikes: a strike logs the content of a removed message for future use
+- Added ✨**color themes**✨
 - Posts may now be deleted by author. If it has comments, comments are not spared
+- If a user for some reason can't post, their post is blocked and they can choose to post it onto another community. Previously it got posted to the user page.
 - Moderators (and admins) have now access to mod tools
     + Allowed operations: change display name, description, restriction status, and exile (guild-local ban) members
     + Site administrators and guild owners can add moderators
 - Administrators can claim ownership of abandoned guilds
 - Implemented guild subscriptions (not as in $$$, yes as in the follow button)
-- Added ✨color themes✨
+- Minimum karma requirement for creating a guild is now configurable via env variable `FREAK_CREATE_GUILD_THRESHOLD` (previously hardcoded at 15)
 - Users can now set their display name, biography and color theme in `/settings`
-- You can now add an impressum in .env, e.g. `IMPRESSUM='Acme Ltd.::1 Short Island::Old York, Divided States::Responsible: ::Donald Duck'` Lines are separated by two colons. Version before 0.4.0 CAN'T BE RUN in German-speaking countries as of 2025.
+- Impressum can now be set in .env, e.g. `IMPRESSUM='Acme Ltd.::1 Short Island::Old York, Divided States::Responsible: ::Donald Duck'` Lines are separated by two colons. **Versions before 0.4.0 CAN'T BE RUN in German-speaking countries** as of 2025.
+- Several aesthetic improvements
 
 ## 0.3.3
 

@@ -40,6 +40,7 @@ class AppConfig(ConfigOptions):
     jquery_url = ConfigValue(default='https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js')
     app_is_behind_proxy = ConfigValue(cast=bool, default=False)
     impressum = ConfigValue(cast=twocolon_list, default='')
+    create_guild_threshold = ConfigValue(cast=int, default=15, prefix='freak_')
 
 app_config = AppConfig()
 
