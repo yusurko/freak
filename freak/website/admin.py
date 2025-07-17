@@ -6,6 +6,7 @@ from typing import Callable
 import warnings
 from flask import Blueprint, abort, redirect, render_template, request, url_for
 from flask_login import current_user
+from markupsafe import Markup
 from sqlalchemy import insert, select, update
 from suou import additem, not_implemented
 
@@ -36,7 +37,7 @@ def account_status_string(u: User):
     elif u.banned_at:
         s = 'Suspended'
         if u.banned_until:
-            s += f' until {u.banned_until:%b %d, %Y %H:%M}'
+            s += f' (until {u.banned_until:%b %d, %Y %H:%M})'
         if u.banned_reason in REPORT_REASON_STRINGS:
             s += f' ({REPORT_REASON_STRINGS[u.banned_reason]})'
         return s
@@ -44,6 +45,19 @@ def account_status_string(u: User):
         return 'Paused'
     else:
         return 'Inactive'
+
+def colorized_account_status_string(u: User):
+    textc = account_status_string(u)
+    t1, t2, t3 = textc.partition('(')
+    if u.is_active:
+        base = '<span class="success">{0}</span>'
+    elif u.banned_at:
+        base = '<span class="error">{0}</span>'
+    else:
+        base = '<span class="warning">{0}</span>'
+    if t2:
+        base += ' <span class="faint">{1}</span>'
+    return Markup(base).format(t1, t2 + t3)
 
 def remove_content(target, reason_code: int):
     if isinstance(target, Post):
@@ -168,4 +182,16 @@ def strikes():
 def users():
     user_list = db.paginate(select(User).order_by(User.joined_at.desc()))
     return render_template('admin/admin_users.html',
-    user_list=user_list, account_status_string=account_status_string)
+    user_list=user_list, account_status_string=colorized_account_status_string)
+
+@bp.route('/admin/users/<b32l:id>', methods=['GET', 'POST'])
+@admin_required
+def user_detail(id: int):
+    u = db.session.execute(select(User).where(User.id == id)).scalar()
+    if u is None:
+        abort(404)
+    if request.method == 'POST':
+        abort(501)
+    strikes = db.session.execute(select(UserStrike).where(UserStrike.user_id == id).order_by(UserStrike.id.desc())).scalars()
+    return render_template('admin/admin_user_detail.html', u=u,
+    report_reasons=REPORT_REASON_STRINGS, account_status_string=colorized_account_status_string, strikes=strikes)

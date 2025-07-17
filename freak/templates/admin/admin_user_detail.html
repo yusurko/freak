@@ -1,0 +1,46 @@
+{% extends "admin/admin_base.html" %}
+{% from "macros/icon.html" import callout with context %}
+
+{% block content %}
+<h2><span class="faint">User:</span> {{ u.handle() }}</h2>
+
+<ul>
+    <li>Age: {{ u.age() }} years old ({{ u.gdpr_birthday.strftime("%B %d, %Y") }})</li>
+    <li>Registered at: {{ u.joined_at.strftime("%B %d, %Y %H:%M %z") }}</li>
+    <li>Registered from IP address: {{ u.joined_ip }}</li>
+    <li>Status: {{ account_status_string(u) }}</li>
+    <li>Karma: {{ u.karma }}</li>
+    {% if u.email %}
+    <li>E-mail: {{ u.email }}</li>
+    {% endif %}
+</ul>
+
+{% if u.banned_at %}
+{% call callout('spoiler', 'error') %}
+{{ u.handle() }} is suspended 
+{% if u.banned_until %}until {{ u.banned_until.strftime("%B %d, %Y %H:%M %z") }}{% else %}indefinitely{% endif %}.
+{% if u.banned_message %}<br />Ban message: “{{ u.banned_message }}”{% endif %}
+{% endcall %}
+{% endif %}
+
+<!-- quick actions -->
+<form method="POST">
+</form>
+
+<h3>Strikes</h3>
+
+{% if strikes %}
+<ul>
+  {% for strike in strikes %}
+  <li>
+    <p><strong>#{{ strike.id | to_cb32 }}</strong></p>
+    <ul class="inline">
+    <li>Reason: <strong>{{ report_reasons[strike.reason_code] }}</strong></li>
+    <li><span class="spoiler">{{ strike.text_content }}</span></li>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="centered success">{{ u.handle() }} is all good!</p>
+{% endif %}
+{% endblock %}

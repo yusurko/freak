@@ -5,7 +5,7 @@
   <ul>
   {% for u in user_list %}
     <li>
-      <p><a href="{{ u.url() }}">{{ u.handle() }}</a> (#{{ u.id | to_b32l }})
+      <p><a href="/admin/users/{{ u.id | to_b32l }}">{{ u.handle() }}</a> (#{{ u.id | to_b32l }})
         {%- if u.is_administrator %}
           <span>(Admin)</span>
         {% endif -%}
@@ -17,7 +17,7 @@
         <li>Age: {{ u.age() }} years old ({{ u.gdpr_birthday.strftime("%B %d, %Y") }})</li>
         <li>Registered at: {{ u.joined_at.strftime("%B %d, %Y %H:%M %z") }}</li>
         <li>Registered from IP address: {{ u.joined_ip }}</li>
-        <li>Status: {{ account_status_string(u) | faint_paren }}</li>
+        <li>Status: {{ account_status_string(u) }}</li>
       </ul>
     </li>
   {% endfor %}
