@@ -13,6 +13,7 @@
     + Allowed operations: change display name, description, restriction status, and exile (guild-local ban) members
     + Site administrators and guild owners can add moderators
 - Administrators can claim ownership of abandoned guilds
+- Guilds can have restricted posting/commenting now. Unmoderated guilds always have.
 - Implemented guild subscriptions (not as in $$$, yes as in the follow button)
 - Minimum karma requirement for creating a guild is now configurable via env variable `FREAK_CREATE_GUILD_THRESHOLD` (previously hardcoded at 15)
 - Users can now set their display name, biography and color theme in `/settings`

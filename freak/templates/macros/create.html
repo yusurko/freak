@@ -22,9 +22,16 @@ disabled=""
 </ul>
 {% endmacro %}
 
-{% macro comment_area(url) %}
+{% macro comment_area(p) %}
 {% if current_user.is_authenticated %}
-<form id="comment-area" class="boundaryless" action="{{ url }}" method="POST" enctype="multipart/form-data">
+{% if current_user.is_disabled %}
+<div class="centered">Your account is suspended</div>
+{% elif current_guild and not current_guild.allows_posting(current_user) %}
+<div class="centered">This community allows only its members to post and comment</div>
+{% elif p.is_locked %}
+<div class="centered">Comments are closed</div>
+{% else %}
+<form id="comment-area" class="boundaryless" action="{{ p.url() }}" method="POST" enctype="multipart/form-data">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
   <input type="hidden" name="reply_to" value="" />
   <div>
@@ -35,6 +42,7 @@ disabled=""
     <button type="submit" class="primary">Publish</button>
   </div>
 </form>
+{% endif %}
 {% else %}
 <div class="centered"><a href="/login">Log in</a> to leave a comment</div>
 {% endif %}

@@ -41,7 +41,8 @@ def guild_feed(name):
     posts = db.paginate(topic_timeline(name))
 
     return render_template(
-        'feed.html', feed_type='guild', feed_title=f'{guild.display_name} (+{guild.name})', l=posts, guild=guild)
+        'feed.html', feed_type='guild', feed_title=f'{guild.display_name} (+{guild.name})', l=posts, guild=guild,
+        current_guild=guild)
 
 @bp.route('/r/<name>/')
 def guild_feed_r(name):

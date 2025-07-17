@@ -16,7 +16,7 @@
   <form action="{{ url_for('create.createguild') }}" method="POST" enctype="multipart/form-data" class="boundaryless">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div>
-      <p>URL of the guild: <strong>+</strong><input type="text" class="username-input" name="name" required="true" data-endpoint="guild_name_availability/$1" /></p>
+      <p>URL of the guild: <strong>+</strong><input type="text" class="username-input" name="name" required="true" data-endpoint="/guild_name_availability/$1" /></p>
       <p><small class="faint">Must be alphanumeric and unique. <strong>May not be changed later</strong>: choose wisely!</small></p>
     </div>
     <div>

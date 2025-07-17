@@ -33,9 +33,9 @@ def username_availability(username: str):
         'is_available': is_available
     }
 
-@bp.route('/guild_name_availability/<username>')
+@bp.route('/guild_name_availability/<name>')
 def guild_name_availability(name: str):
-    is_valid = re.fullmatch('[a-z0-9_-]+', name) is not None
+    is_valid = username_is_legal(name)
 
     if is_valid:
         gd = db.session.execute(select(Guild).where(Guild.name == name)).scalar()

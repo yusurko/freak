@@ -27,21 +27,30 @@
 			usernameInputMessage.className = 'username-input-message error';
 			return;
           }
+		  if (value.length >= 100) {
+			usernameInputMessage.innerHTML = 'Your username must be shorter.';
+			usernameInputMessage.className = 'username-input-message error';
+			return;
+		  }
           if(/^[01]/.test(value)) {
 			usernameInputMessage.innerHTML = 'Your username cannot start with 0 or 1.';
 			usernameInputMessage.className = 'username-input-message error';
 			return;
 		  }
           usernameInputMessage.innerHTML = 'Checking username...';
-          usernameInputMessage.className = 'username-input-message checking';
+          usernameInputMessage.className = 'username-input-message checking faint';
           requestUsernameAvailability(value, endpoint).then((resp) => {
 			if (['ok', void 0].indexOf(resp.status) < 0){
               usernameInputMessage.innerHTML = 'Sorry, there was an unknown error.';
               usernameInputMessage.className = 'username-input-message error';
               return;
 			}
-			if (resp.is_available){
-              usernameInputMessage.innerHTML = "The username @" + value + " is available!";
+			if (!resp.is_legal) {
+			  usernameInputMessage.innerHTML = "You can't use this username.";
+              usernameInputMessage.className = 'username-input-message error';
+              return;
+			} else if (resp.is_available){
+              usernameInputMessage.innerHTML = `The username @${value} is available!`;
               usernameInputMessage.className = 'username-input-message success';
               return;
 			} else {

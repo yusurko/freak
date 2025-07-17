@@ -40,6 +40,20 @@ def user_profile_s(username):
 
 
 def single_post_post_hook(p: Post):
+    if p.guild is not None:
+        gu = p.guild
+        if gu.has_exiled(current_user):
+            flash(f'You have been banned from {gu.handle()}')
+            return
+
+        if not gu.allows_posting(current_user):
+            flash(f'You can\'t post in {gu.handle()}')
+            return
+
+    if p.is_locked:
+        flash(f'You can\'t comment on locked posts')
+        return
+
     if 'reply_to' in request.form:
         reply_to_id = request.form['reply_to']
         text = request.form['text']
@@ -100,7 +114,7 @@ def guild_post_detail(gname, id, slug=''):
     if request.method == 'POST':
         single_post_post_hook(post)
 
-    return render_template('singlepost.html', p=post, comments=comments_of(post))
+    return render_template('singlepost.html', p=post, comments=comments_of(post), current_guild = post.guild)
 
 
 

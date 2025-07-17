@@ -42,9 +42,10 @@ post_report_reasons = [
     ReportReason(180, 'impersonation', 'Impersonation'),
     ReportReason(141, 'doxing', 'Diffusion of PII (personally identifiable information)'),
     ## less urgent
-    ReportReason(140, 'bullying', 'Harassment, bullying, or suicide incitement'),
     ReportReason(112, 'lgbt_hate', 'Hate speech against LGBTQ+ or women'),
+    ReportReason(140, 'bullying', 'Harassment, bullying, or suicide incitement'),
     ReportReason(150, 'security_exploit', 'Dangerous security exploit or violation'),
+    ReportReason(160, 'spam', 'Unsolicited advertising'),
     ReportReason(190, 'false_information', 'False or deceiving information'),
     ReportReason(123, 'copyviol', 'This is my creation and someone else is using it without my permission/license'),
     ## minor (unironically)
@@ -168,7 +169,7 @@ class User(Base):
     ## XXX posts and comments relationships are temporarily disabled because they make
     ## SQLAlchemy fail initialization of models — bricking the app.
     ## Posts are queried manually anyway
-    #posts = relationship("Post", back_populates='author', )
+    #posts = relationship("Post", primaryjoin=lambda: #back_populates='author', pr)
     upvoted_posts = relationship("Post", secondary=PostUpvote, back_populates='upvoters')
     #comments = relationship("Comment", back_populates='author')
     
@@ -364,8 +365,10 @@ class Guild(Base):
         mem: Member | None = db.session.execute(select(Member).where(Member.user_id == other.id, Member.guild_id == self.id)).scalar() if other else None
         if mem and mem.is_banned:
             return False
+        if other.moderates(self):
+            return True
         if self.is_restricted:
-            return mem and mem.is_approved
+            return (mem and mem.is_approved)
         return True
 
 
@@ -447,7 +450,7 @@ class Post(Base):
     title = Column(String(256), nullable=False)
     post_type = Column(SmallInteger, server_default=text('0'))
     author_id = Column(BigInteger, ForeignKey('freak_user.id', name='post_author_id'), nullable=True)
-    topic_id = Column(BigInteger, ForeignKey('freak_topic.id', name='post_topic_id'), nullable=True)
+    topic_id = Column('topic_id', BigInteger, ForeignKey('freak_topic.id', name='post_topic_id'), nullable=True)
     created_at = Column(DateTime, server_default=func.current_timestamp())
     created_ip = Column(String(64), default=get_remote_addr, nullable=False)
     updated_at = Column(DateTime, nullable=True)
@@ -465,7 +468,7 @@ class Post(Base):
 
     # utilities
     author: Relationship[User] = relationship("User", lazy='selectin', foreign_keys=[author_id])#, back_populates="posts")
-    guild = relationship("Guild", back_populates="posts", lazy='selectin')
+    guild: Relationship[Guild] = relationship("Guild", back_populates="posts", lazy='selectin')
     comments = relationship("Comment", back_populates="parent_post")
     upvoters = relationship("User", secondary=PostUpvote, back_populates='upvoted_posts')
 
