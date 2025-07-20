@@ -47,7 +47,7 @@
 		  <!-- no user -->
 		  {% elif current_user.is_authenticated %}
 		    <li class="nomobile">
-			  <a class="round border-accent" href="{{ url_for('create.create', on=current_guild.name) if current_guild else '/create/' }}" title="Create a post" aria-label="Create a post">
+			  <a class="round border-accent" href="{{ url_for('create.create', on=current_guild.name) if current_guild and current_guild.allows_posting(current_user) else '/create/' }}" title="Create a post" aria-label="Create a post">
 				{{ icon('add') }}
 				<span>New post</span>
 		      </a>

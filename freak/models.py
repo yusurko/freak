@@ -80,7 +80,7 @@ ILLEGAL_USERNAMES = tuple((
     'loli kkk pnf adl cop tranny google trustandsafety safety ice fbi nsa it '
     ## VVVVIP
     'potus realdonaldtrump elonmusk teddysphotos mrbeast jkrowling pewdiepie '
-    'elizabethii king queen pontifex hogwarts lumos alohomora '
+    'elizabethii king queen pontifex hogwarts lumos alohomora isis daesh '
 ).split())
 
 def username_is_legal(username: str) -> bool:
