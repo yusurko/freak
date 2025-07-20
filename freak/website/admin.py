@@ -10,9 +10,11 @@ from markupsafe import Markup
 from sqlalchemy import insert, select, update
 from suou import additem, not_implemented
 
-from ..models import REPORT_REASON_STRINGS, REPORT_TARGET_COMMENT, REPORT_TARGET_POST, REPORT_UPDATE_COMPLETE, REPORT_UPDATE_ON_HOLD, REPORT_UPDATE_REJECTED, Comment, Post, PostReport, User, UserStrike, db
+from ..models import REPORT_REASON_STRINGS, REPORT_REASONS, REPORT_TARGET_COMMENT, REPORT_TARGET_POST, REPORT_UPDATE_COMPLETE, REPORT_UPDATE_ON_HOLD, REPORT_UPDATE_REJECTED, Comment, Post, PostReport, User, UserStrike, db
 
 bp = Blueprint('admin', __name__)
+
+current_user: User
 
 ## TODO make admin interface
 
@@ -191,7 +193,26 @@ def user_detail(id: int):
     if u is None:
         abort(404)
     if request.method == 'POST':
-        abort(501)
+        action = request.form['do']
+        if action == 'suspend':
+            u.banned_at = datetime.datetime.now()
+            u.banned_by_id = current_user.id
+            u.banned_reason = REPORT_REASONS.get(request.form.get('reason'), 0)
+            db.session.commit()
+        elif action == 'unsuspend':
+            u.banned_at = None
+            u.banned_by_id = None
+            u.banned_until = None
+            u.banned_reason = None
+            db.session.commit()
+        elif action == 'to_3d':
+            u.banned_at = datetime.datetime.now()
+            u.banned_until = datetime.datetime.now() + datetime.timedelta(days=3)
+            u.banned_by_id = current_user.id
+            u.banned_reason = REPORT_REASONS.get(request.form.get('reason'), 0)
+            db.session.commit()
+        else:
+            abort(400)
     strikes = db.session.execute(select(UserStrike).where(UserStrike.user_id == id).order_by(UserStrike.id.desc())).scalars()
     return render_template('admin/admin_user_detail.html', u=u,
     report_reasons=REPORT_REASON_STRINGS, account_status_string=colorized_account_status_string, strikes=strikes)

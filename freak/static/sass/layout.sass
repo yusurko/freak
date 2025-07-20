@@ -310,6 +310,12 @@ button, [type="submit"], [type="reset"], [type="button"]
     &[disabled]
         opacity: .5
         cursor: not-allowed
+        border: var(--border)
+        color: var(--border)
+    
+    &.primary[disabled]
+        color: var(--background)
+        background-color: var(--border)
     
     &:first-child
         margin-inline-start: 0

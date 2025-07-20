@@ -24,7 +24,23 @@
 {% endif %}
 
 <!-- quick actions -->
+<h3>Quick Actions</h3>
 <form method="POST">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+  <select name="reason">
+    <option selected value="0">(Select a reason)</option>
+    <option value="100">Multiple violations</option>
+    {% for k, v in report_reasons.items() %}
+    <option value="{{ k }}">{{ v }}</option>
+    {% endfor %}
+  </select>
+  <br />
+  {% if u.banned_at %}
+  <button type="submit" name="do" value="unsuspend">Remove suspension</button>
+  {% else %}
+  <button type="submit" name="do" value="suspend">Suspend</button>
+  <button type="submit" name="do" value="to_3d">Time-out (3 days)</button>
+  {% endif %}
 </form>
 
 <h3>Strikes</h3>

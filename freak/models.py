@@ -54,7 +54,7 @@ post_report_reasons = [
 
 REPORT_REASON_STRINGS = { **{x.num_code: x.description for x in post_report_reasons}, **{x.code: x.description for x in post_report_reasons} }
 
-REPORT_REASONS = {x.code: x.num_code for x in post_report_reasons}
+REPORT_REASONS: dict[str, int] = {x.code: x.num_code for x in post_report_reasons}
 
 REPORT_TARGET_POST = 1
 REPORT_TARGET_COMMENT = 2
@@ -175,7 +175,13 @@ class User(Base):
     
     @property
     def is_disabled(self):
-        return (self.banned_at is not None and (self.banned_until is None or self.banned_until <= datetime.datetime.now())) or self.is_disabled_by_user
+        now = datetime.datetime.now()
+        return (
+            # suspended
+            (self.banned_at is not None and (self.banned_until is None or self.banned_until >= now)) or 
+            # self-disabled
+            self.is_disabled_by_user
+        )
 
     @property
     def is_active(self):
