@@ -45,7 +45,7 @@
               usernameInputMessage.className = 'username-input-message error';
               return;
 			}
-			if (!resp.is_legal) {
+			if (resp.is_valid === false) {
 			  usernameInputMessage.innerHTML = "You can't use this username.";
               usernameInputMessage.className = 'username-input-message error';
               return;

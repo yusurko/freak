@@ -66,21 +66,22 @@ REPORT_UPDATE_ON_HOLD = 3
 
 USERNAME_RE = r'[a-z2-9_-][a-z0-9_-]+'
 
-ILLEGAL_USERNAMES = (
+ILLEGAL_USERNAMES = tuple((
     ## masspings and administrative claims
-    'me', 'everyone', 'here', 'room', 'all', 'any', 'founder', 'owner',
-    'admin', 'administrator', 'mod', 'modteam', 'moderator', 'sysop', 'server', 'app'
+    'me everyone here room all any server app dev devel develop nil none '
+    'founder owner admin administrator mod modteam moderator sysop some '
     ## fictitious users and automations
-    'nobody', 'deleted', 'suspended',  'default', 'bot', 'developer', 'undefined', 'null', 
-    'ai', 'automod', 'automoderator', 'assistant', 'privacy', 'anonymous', 'removed'
+    'nobody deleted suspended default bot developer undefined null '
+    'ai automod automoderator assistant privacy anonymous removed assistance '
     ## law enforcement corps and slurs because yes
-    'pedo', 'rape', 'rapist', 'nigger', 'retard', 'ncmec', 'police', 'cops', '911', 'childsafety',
-    'report', 'dmca', 'login', 'logout', 'security', 'order66', 'gestapo', 'ss', 'hitler',
-    'pedophile', 'lolicon', 'giphy', 'tenor', 'csam', 'cp', 'pedobear', 'lolita',
-    'loli', 'kkk', 'pnf', 'adl', 'cop', 'tranny', 'google', 'trustandsafety', 'safety', 'ice',
+    'pedo rape rapist nigger retard ncmec police cops 911 childsafety '
+    'report dmca login logout security order66 gestapo ss hitler heilhitler kgb '
+    'pedophile lolicon giphy tenor csam cp pedobear lolita lolice thanos '
+    'loli kkk pnf adl cop tranny google trustandsafety safety ice fbi nsa it '
     ## VVVVIP
-    'potus', 'realdonaldtrump', 'elonmusk', 'teddysphotos', 'mrbeast', 'jkrowling', 'pewdiepie'
-)
+    'potus realdonaldtrump elonmusk teddysphotos mrbeast jkrowling pewdiepie '
+    'elizabethii king queen pontifex hogwarts lumos alohomora '
+).split())
 
 def username_is_legal(username: str) -> bool:
     if len(username) < 2 or len(username) > 100:
