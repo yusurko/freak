@@ -12,13 +12,13 @@
 - Moderators (and admins) have now access to mod tools
     + Allowed operations: change display name, description, restriction status, and exile (guild-local ban) members
     + Site administrators and guild owners can add moderators
-- Guilds can have restricted posting/commenting now. Unmoderated guilds always have.
+- Guilds can have restricted posting/commenting now. Unmoderated guilds always have
 - Administrators can claim ownership of abandoned guilds
 - Admins can now suspend users from admin panel
 - Implemented guild subscriptions (not as in $$$, yes as in the follow button)
 - Minimum karma requirement for creating a guild is now configurable via env variable `FREAK_CREATE_GUILD_THRESHOLD` (previously hardcoded at 15)
 - Users can now set their display name, biography and color theme in `/settings`
-- Impressum can now be set in .env, e.g. `IMPRESSUM='Acme Ltd.::1 Short Island::Old York, Divided States::Responsible: ::Donald Duck'` Lines are separated by two colons. **Versions before 0.4.0 CAN'T BE RUN in German-speaking countries** as of 2025.
+- Impressum can now be set in .env, e.g. `IMPRESSUM='Acme Ltd.::1 Short Island::Old York, Divided States::Responsible: ::Donald Duck'` Lines are separated by two colons. **Versions before 0.4.0 CAN'T BE RUN in German-speaking countries** as of 2025
 - Several aesthetic improvements
 
 ## 0.3.3
