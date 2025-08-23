@@ -5,8 +5,10 @@ import math
 import os
 import time
 import re
-from flask import request
+from quart import request
+from suou import deprecated, twocolon_list as _twocolon_list
 
+@deprecated('replaced by suou.age_and_days()')
 def age_and_days(date: datetime.datetime, now: datetime.datetime | None = None) -> tuple[int, int]:
     if now is None:
         now = datetime.date.today()
@@ -19,6 +21,7 @@ def get_remote_addr():
         return request.headers.getlist('X-Forwarded-For')[0]
     return request.remote_addr
 
+@deprecated('replaced by suou.timed_cache()')
 def timed_cache(ttl: int, maxsize: int = 128, typed: bool = False):
     def decorator(func):
         start_time = None
@@ -39,7 +42,13 @@ def timed_cache(ttl: int, maxsize: int = 128, typed: bool = False):
 def is_b32l(username: str) -> bool:
     return re.fullmatch(r'[a-z2-7]+', username)
 
-def twocolon_list(s: str | None) -> list[str]:
-    if not s:
-        return []
-    return [x.strip() for x in s.split('::')]
+twocolon_list = deprecated('import from suou instead')(_twocolon_list)
+
+async def get_request_form() -> dict:
+    """
+    Get the request form as HTTP x-www-form-urlencoded dict
+
+    NEW 0.5.0
+    """
+    return dict(await request.form)
+

@@ -16,7 +16,7 @@
 {% endblock %}
 
 {% block nav %}
-  {% if user.is_active and not user.has_blocked(current_user) %}
+  {% if user.is_active and not user.has_blocked(current_user.user) %}
     {{ nav_user(user) }}
   {% endif %}
 {% endblock %}

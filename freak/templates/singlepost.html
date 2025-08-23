@@ -54,11 +54,11 @@
 		</div>
 	  </div>
 	  <div class="message-stats">
-		{{ feed_upvote(p.id, p.upvotes(), p.upvoted_by(current_user)) }}
-		{{ comment_count(p.comments | count) }}
+		{{ feed_upvote(p.id, p.upvotes(), p.upvoted_by(current_user.user)) }}
+		{{ comment_count(p.comment_count()) }}
 	  </div>
 	  <ul class="message-options inline">
-		{% if p.author == current_user %}
+		{% if p.author_id == current_user.id %}
 		<li><a href="/edit/post/{{ p.id|to_b32l }}"><i class="icon icon-edit"></i> Edit</a></li>
 		{% else %}
 		<li><a href="{{ p.report_url() }}"><i class="icon icon-report"></i> Report</a></li>

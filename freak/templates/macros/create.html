@@ -26,7 +26,7 @@ disabled=""
 {% if current_user.is_authenticated %}
 {% if current_user.is_disabled %}
 <div class="centered">Your account is suspended</div>
-{% elif current_guild and not current_guild.allows_posting(current_user) %}
+{% elif current_guild and not current_guild.allows_posting(current_user.user) %}
 <div class="centered">This community allows only its members to post and comment</div>
 {% elif p.is_locked %}
 <div class="centered">Comments are closed</div>

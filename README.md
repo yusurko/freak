@@ -24,7 +24,7 @@
     * Will to not give up.
 * Clone this repository.
 * Fill in `.env` with the necessary information.
-    * `DOMAIN_NAME` (see above)
+    * `SERVER_NAME` (see above)
     * `APP_NAME`
     * `DATABASE_URL` (hint: `postgresql://username:password@localhost/dbname`)
     * `SECRET_KEY` (you can generate one with the command `cat /dev/random | tr -dc A-Za-z0-9_. | head -c 56`)

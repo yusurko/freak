@@ -12,7 +12,7 @@
     This Service is available "AS IS", with NO WARRANTY, explicit or implied.
     Sakuragasaki46 is NOT legally liable for Your use of the Service.
     This service is age-restricted; do not access if underage.
-    More info: https://{{ domain_name }}/terms
+    More info: https://{{ server_name }}/terms
     -->
 	<meta name="og:site_name" content="{{ app_name }}" />
 	<meta name="generator" content="{{ app_name }} {{ app_version }}" />
@@ -25,7 +25,7 @@
 	<link rel="icon" href="/favicon.ico" />
 	<script src="{{ jquery_url }}"></script>
   </head>
-  <body {% if current_user.color_theme %} class="{{ theme_classes(current_user.color_theme) }}"{% endif %}>
+  <body {% if current_user and current_user.color_theme %} class="{{ theme_classes(current_user.color_theme) }}"{% endif %}>
 	<header class="header">
 	  <h1><a href="/">{{ app_name }}</a></h1>
 	  <div class="metanav">
@@ -44,9 +44,9 @@
 		  {% endif %}
 		  {% if g.no_user %}
 		  <!-- no user -->
-		  {% elif current_user.is_authenticated %}
+		  {% elif current_user %}
 		    <li class="nomobile">
-			  <a class="round border-accent" href="{{ url_for('create.create', on=current_guild.name) if current_guild and current_guild.allows_posting(current_user) else '/create/' }}" title="Create a post" aria-label="Create a post">
+			  <a class="round border-accent" href="{{ url_for('create.create', on=current_guild.name) if current_guild and current_guild.allows_posting(current_user.user) else '/create/' }}" title="Create a post" aria-label="Create a post">
 				{{ icon('add') }}
 				<span>New post</span>
 		      </a>
@@ -81,6 +81,7 @@
 	  {% for message in get_flashed_messages() %}
 		<div class="flash card">{{ message }}</div>
       {% endfor %}
+	  <script>document.write('<div class="flash card">The old HTTP-only frontend is deprecated. Please use the new Svelte frontend.</div>');</script>
 	  {% block body %}
 		<div class="content-header">
 		  {% block heading %}{% endblock %}
@@ -104,7 +105,7 @@
 		<li><a href="https://github.com/sakuragasaki46/freak">GitHub</a></li>
 	  </ul>
 	</footer>
-	{% if current_user and current_user.is_authenticated %}
+	{% if current_user %}
 	<footer class="mobile-nav mobileonly">
 	  <ul>
 	    <li><a href="/" title="Homepage">{{ icon('home') }}</a></li>

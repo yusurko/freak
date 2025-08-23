@@ -3,7 +3,7 @@ Disallow: /login
 Disallow: /logout
 Disallow: /create
 Disallow: /register
-Disallow: /createcommunity
+Disallow: /createguild
 
 User-Agent: GPTBot
 Disallow: /

@@ -9,7 +9,7 @@
         {%- if u.is_administrator %}
           <span>(Admin)</span>
         {% endif -%}
-        {% if u == current_user %}
+        {% if u == current_user.user %}
           <span>(You)</span>
         {% endif -%}
       </p>

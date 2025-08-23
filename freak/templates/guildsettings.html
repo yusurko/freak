@@ -75,7 +75,7 @@
   <section class="card">
     <h2>Management</h2>
     <!-- TODO: make moderation consensual -->
-    {% if gu.owner == current_user or current_user.is_administrator %}
+    {% if gu.owner == current_user.user or current_user.is_administrator %}
     <div>
       <label>
         Add user as moderator:

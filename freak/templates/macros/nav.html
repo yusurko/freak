@@ -8,7 +8,7 @@
 	<ul>
 	  <li><i class="icon icon-info" style="font-size:inherit"></i> {{ gu.description }}</li>
 	  <li>
-		<strong>{{ gu.posts | count }}</strong> posts -
+		<strong>{{ gu.post_count() }}</strong> posts -
 		<strong>{{ gu.subscriber_count() }}</strong> subscribers
 	  </li>
 	</ul>
@@ -17,12 +17,12 @@
   {% if current_user.moderates(gu) %}
   <a href="{{ gu.url() }}/settings"><button class="card">{{ icon('settings') }} Mod Tools</button></a>
   {% endif %}
-  {{ subscribe_button(gu, gu.has_subscriber(current_user)) }}
-  {% if not gu.owner %}
+  {{ subscribe_button(gu, gu.has_subscriber(current_user.user)) }}
+  {% if not gu.owner_id %}
   <aside class="card">
     <p class="centered">{{ gu.handle() }} is currently unmoderated</p>
   </aside>
-  {% elif gu.has_exiled(current_user) %}
+  {% elif gu.has_exiled(current_user.user) %}
   <aside class="card">
     <p class="centered">Moderator list is hidden because you are banned.</p>
     <!-- TODO appeal button -->
@@ -58,11 +58,11 @@
 	  {% endif %}
 	</ul>
   </aside>
-  {% if user == current_user %}
+  {% if user == current_user.user %}
   <a href="/settings"><button class="card">{{ icon('settings') }} Settings</button></a>
   {% elif current_user.is_authenticated %}
   {{ block_button(user, current_user.has_blocked(user)) }}
-  {{ subscribe_button(user, user.has_subscriber(current_user)) }}
+  {{ subscribe_button(user, user.has_subscriber(current_user.user)) }}
   {% else %}
   <aside class="card">
     <p><a href="/login">Log in</a> to subscribe and interact with {{ user.handle() }}</p>
@@ -75,9 +75,9 @@
   <h3>Top Communities</h3>
   <ul>
 	{% for comm, pcnt, scnt in top_communities %}
-	<li><strong><a href="{{ comm.url() }}">{{ comm.handle() }}</a></strong> - <strong>{{ pcnt }}</strong> posts - <strong>{{ scnt }}</strong> subscribers</li>
+	<li><strong><a href="/+{{ comm }}">+{{ comm }}</a></strong> - <strong>{{ pcnt }}</strong> posts - <strong>{{ scnt }}</strong> subscribers</li>
 	{% endfor %}
-	{% if current_user and current_user.is_authenticated and current_user.can_create_community() %}
+	{% if current_user and current_user.can_create_community() %}
 	<li>Can’t find your community? <a href="/createcommunity">Create a new one.</a></li>
 	{% endif %}
   </ul>

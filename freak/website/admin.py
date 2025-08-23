@@ -4,27 +4,30 @@ import datetime
 from functools import wraps
 from typing import Callable
 import warnings
-from flask import Blueprint, abort, redirect, render_template, request, url_for
-from flask_login import current_user
+from quart import Blueprint, abort, redirect, render_template, request, url_for
+from quart_auth import current_user
 from markupsafe import Markup
 from sqlalchemy import insert, select, update
 from suou import additem, not_implemented
+
+from freak import UserLoader
+from freak.utils import get_request_form
 
 from ..models import REPORT_REASON_STRINGS, REPORT_REASONS, REPORT_TARGET_COMMENT, REPORT_TARGET_POST, REPORT_UPDATE_COMPLETE, REPORT_UPDATE_ON_HOLD, REPORT_UPDATE_REJECTED, Comment, Post, PostReport, User, UserStrike, db
 
 bp = Blueprint('admin', __name__)
 
-current_user: User
+current_user: UserLoader
 
 ## TODO make admin interface
 
 def admin_required(func: Callable):
     @wraps(func)
-    def wrapper(**ka):
-        user: User = current_user
-        if not user.is_authenticated or not user.is_administrator:
+    def wrapper(*a, **ka):
+        user: User = current_user.user
+        if not user or not user.is_administrator:
             abort(403)
-        return func(**ka)
+        return func(*a, **ka)
     return wrapper
 
 
@@ -61,16 +64,17 @@ def colorized_account_status_string(u: User):
         base += ' <span class="faint">{1}</span>'
     return Markup(base).format(t1, t2 + t3)
 
-def remove_content(target, reason_code: int):
-    if isinstance(target, Post):
-        target.removed_at = datetime.datetime.now()
-        target.removed_by_id = current_user.id
-        target.removed_reason = reason_code
-    elif isinstance(target, Comment):
-        target.removed_at = datetime.datetime.now()
-        target.removed_by_id = current_user.id
-        target.removed_reason = reason_code
-    db.session.add(target)
+async def remove_content(target, reason_code: int):
+    async with db as session:
+        if isinstance(target, Post):
+            target.removed_at = datetime.datetime.now()
+            target.removed_by_id = current_user.id
+            target.removed_reason = reason_code
+        elif isinstance(target, Comment):
+            target.removed_at = datetime.datetime.now()
+            target.removed_by_id = current_user.id
+            target.removed_reason = reason_code
+        session.add(target)
 
 def get_author(target) -> User | None:
     if isinstance(target, (Post, Comment)):
@@ -89,54 +93,54 @@ def get_content(target) -> str | None:
 REPORT_ACTIONS = {}
 
 @additem(REPORT_ACTIONS, '1')
-def accept_report(target, source: PostReport):
-    if source.is_critical():
-        warnings.warn('attempted remove on a critical report case, striking instead', UserWarning)
-        return strike_report(target, source)
+async def accept_report(target, source: PostReport):
+    async with db as session:
+        if source.is_critical():
+            warnings.warn('attempted remove on a critical report case, striking instead', UserWarning)
+            return await strike_report(target, source)
 
-    remove_content(target, source.reason_code)
+        await remove_content(target, source.reason_code)
 
-    source.update_status = REPORT_UPDATE_COMPLETE
-    db.session.add(source)
-    db.session.commit()
+        source.update_status = REPORT_UPDATE_COMPLETE
+        session.add(source)
 
 
 @additem(REPORT_ACTIONS, '2')
-def strike_report(target, source: PostReport):
-    remove_content(target, source.reason_code)
+async def strike_report(target, source: PostReport):
+    async with db as session:
+        await remove_content(target, source.reason_code)
 
-    author = get_author(target)
-    if author:
-        db.session.execute(insert(UserStrike).values(
-            user_id = author.id,
-            target_type = TARGET_TYPES[type(target)],
-            target_id = target.id,
-            target_content = get_content(target),
-            reason_code = source.reason_code,
-            issued_by_id = current_user.id
-        ))
+        author = get_author(target)
+        if author:
+            session.execute(insert(UserStrike).values(
+                user_id = author.id,
+                target_type = TARGET_TYPES[type(target)],
+                target_id = target.id,
+                target_content = get_content(target),
+                reason_code = source.reason_code,
+                issued_by_id = current_user.id
+            ))
 
-        if source.is_critical():
-            author.banned_at = datetime.datetime.now()
-            author.banned_reason = source.reason_code
+            if source.is_critical():
+                author.banned_at = datetime.datetime.now()
+                author.banned_reason = source.reason_code
 
-    source.update_status = REPORT_UPDATE_COMPLETE
-    db.session.add(source)
-    db.session.commit()
+        source.update_status = REPORT_UPDATE_COMPLETE
+        session.add(source)
 
 
 @additem(REPORT_ACTIONS, '0')
-def reject_report(target, source: PostReport):
-    source.update_status = REPORT_UPDATE_REJECTED
-    db.session.add(source)
-    db.session.commit()
+async def reject_report(target, source: PostReport):
+    async with db as session:
+        source.update_status = REPORT_UPDATE_REJECTED
+        session.add(source)
 
 
 @additem(REPORT_ACTIONS, '3')
-def withhold_report(target, source: PostReport):
-    source.update_status = REPORT_UPDATE_ON_HOLD
-    db.session.add(source)
-    db.session.commit()
+async def withhold_report(target, source: PostReport):
+    async with db as session:
+        source.update_status = REPORT_UPDATE_ON_HOLD
+        session.add(source)
 
 
 @additem(REPORT_ACTIONS, '4')
@@ -148,71 +152,72 @@ def escalate_report(target, source: PostReport):
 
 @bp.route('/admin/')
 @admin_required
-def homepage():
-    return render_template('admin/admin_home.html')
+async def homepage():
+    return await render_template('admin/admin_home.html')
 
 @bp.route('/admin/reports/')
 @admin_required
-def reports():
+async def reports():
     report_list = db.paginate(select(PostReport).order_by(PostReport.id.desc()))
-    return render_template('admin/admin_reports.html',
+    return await render_template('admin/admin_reports.html',
     report_list=report_list, report_reasons=REPORT_REASON_STRINGS)
 
 @bp.route('/admin/reports/<b32l:id>', methods=['GET', 'POST'])
 @admin_required
-def report_detail(id: int):
-    report = db.session.execute(select(PostReport).where(PostReport.id == id)).scalar()
-    if report is None:
-        abort(404)
-    if request.method == 'POST':
-        action = REPORT_ACTIONS[request.form['do']]
-        action(report.target(), report)
-        return redirect(url_for('admin.reports'))
-    return render_template('admin/admin_report_detail.html', report=report,
+async def report_detail(id: int):
+    async with db as session:
+        report = (await session.execute(select(PostReport).where(PostReport.id == id))).scalar()
+        if report is None:
+            abort(404)
+        if request.method == 'POST':
+            form = await get_request_form()
+            action = REPORT_ACTIONS[form['do']]
+            await action(report.target(), report)
+            return redirect(url_for('admin.reports'))
+    return await render_template('admin/admin_report_detail.html', report=report,
         report_reasons=REPORT_REASON_STRINGS)
 
 @bp.route('/admin/strikes/')
 @admin_required
-def strikes():
-    strike_list = db.paginate(select(UserStrike).order_by(UserStrike.id.desc()))
-    return render_template('admin/admin_strikes.html',
+async def strikes():
+    strike_list = await db.paginate(select(UserStrike).order_by(UserStrike.id.desc()))
+    return await render_template('admin/admin_strikes.html',
     strike_list=strike_list, report_reasons=REPORT_REASON_STRINGS)
 
 
 @bp.route('/admin/users/')
 @admin_required
-def users():
+async def users():
     user_list = db.paginate(select(User).order_by(User.joined_at.desc()))
-    return render_template('admin/admin_users.html',
+    return await render_template('admin/admin_users.html',
     user_list=user_list, account_status_string=colorized_account_status_string)
 
 @bp.route('/admin/users/<b32l:id>', methods=['GET', 'POST'])
 @admin_required
-def user_detail(id: int):
-    u = db.session.execute(select(User).where(User.id == id)).scalar()
-    if u is None:
-        abort(404)
-    if request.method == 'POST':
-        action = request.form['do']
-        if action == 'suspend':
-            u.banned_at = datetime.datetime.now()
-            u.banned_by_id = current_user.id
-            u.banned_reason = REPORT_REASONS.get(request.form.get('reason'), 0)
-            db.session.commit()
-        elif action == 'unsuspend':
-            u.banned_at = None
-            u.banned_by_id = None
-            u.banned_until = None
-            u.banned_reason = None
-            db.session.commit()
-        elif action == 'to_3d':
-            u.banned_at = datetime.datetime.now()
-            u.banned_until = datetime.datetime.now() + datetime.timedelta(days=3)
-            u.banned_by_id = current_user.id
-            u.banned_reason = REPORT_REASONS.get(request.form.get('reason'), 0)
-            db.session.commit()
-        else:
-            abort(400)
-    strikes = db.session.execute(select(UserStrike).where(UserStrike.user_id == id).order_by(UserStrike.id.desc())).scalars()
+async def user_detail(id: int):
+    async with db as session:
+        u = session.execute(select(User).where(User.id == id)).scalar()
+        if u is None:
+            abort(404)
+        if request.method == 'POST':
+            form = await get_request_form()
+            action = form['do']
+            if action == 'suspend':
+                u.banned_at = datetime.datetime.now()
+                u.banned_by_id = current_user.id
+                u.banned_reason = REPORT_REASONS.get(form.get('reason'), 0)
+            elif action == 'unsuspend':
+                u.banned_at = None
+                u.banned_by_id = None
+                u.banned_until = None
+                u.banned_reason = None
+            elif action == 'to_3d':
+                u.banned_at = datetime.datetime.now()
+                u.banned_until = datetime.datetime.now() + datetime.timedelta(days=3)
+                u.banned_by_id = current_user.id
+                u.banned_reason = REPORT_REASONS.get(form.get('reason'), 0)
+            else:
+                abort(400)
+        strikes = (await session.execute(select(UserStrike).where(UserStrike.user_id == id).order_by(UserStrike.id.desc()))).scalars()
     return render_template('admin/admin_user_detail.html', u=u,
     report_reasons=REPORT_REASON_STRINGS, account_status_string=colorized_account_status_string, strikes=strikes)

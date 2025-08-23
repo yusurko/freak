@@ -6,19 +6,20 @@ authors = [
 dynamic = ["version"]
 dependencies = [
     "Python-Dotenv>=1.0.0",
-    "Flask",
-    "Flask-RestX",
+    "Quart",
+    "Quart-Schema",
     "Python-Slugify",
     "SQLAlchemy>=2.0.0",
-    "Flask-SQLAlchemy",
-    "Flask-WTF",
-    "Flask-Login",
+    # XXX it's Quart-wtFORMS not Quart-wtf see: https://github.com/Quart-Addons/quart-wtf/issues/20
+    "Quart-WTForms>=1.0.3",
+    "Quart-Auth",
     "Alembic",
-    "Markdown>=3.0.0",
-    "PsycoPG2-binary",
+    "Markdown>=3.0",
+    "PsycoPG>=3.0",
     "libsass",
     "setuptools>=78.1.0",
-    "sakuragasaki46-suou>=0.4.0"
+    "Hypercorn",
+    "sakuragasaki46-suou>=0.5.0"
 ]
 requires-python =  ">=3.10"
 classifiers = [

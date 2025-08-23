@@ -1,24 +1,41 @@
 
+from __future__ import annotations
 
-from flask import Blueprint, redirect, url_for
-from flask_restx import Resource
+from flask import abort
+from quart import Blueprint, redirect, url_for
+from quart_auth import current_user, login_required
+from quart_schema import QuartSchema, validate_request, validate_response
 from sqlalchemy import select
-from suou import Snowflake
-from suou.flask_sqlalchemy import require_auth
+from suou import Snowflake, deprecated, not_implemented, want_isodate
 
-from suou.flask_restx import Api
+from suou.quart import add_rest
 
 from ..models import Post, User, db
+from .. import UserLoader, app, app_config,  __version__ as freak_version
 
-rest_bp = Blueprint('rest', __name__, url_prefix='/v1')
-rest = Api(rest_bp)
+bp = Blueprint('rest', __name__, url_prefix='/v1')
+rest = add_rest(app, '/v1', '/ajax')
 
-auth_required = require_auth(User, db)
+current_user: UserLoader
 
-@rest.route('/nurupo')
-class Nurupo(Resource):
-    def get(self):
-        return dict(nurupo='ga')
+## TODO deprecate auth_required since it does not work
+from suou.flask_sqlalchemy import require_auth
+auth_required = deprecated('use login_required() and current_user instead')(require_auth(User, db))
+
+@not_implemented()
+async def authenticated():
+    pass
+
+@bp.get('/nurupo')
+async def get_nurupo():
+    return dict(ga=-1)
+
+@bp.get('/health')
+async def health():
+    return dict(
+        version=freak_version,
+        name = app_config.app_name
+    )
 
 ## TODO coverage of REST is still partial, but it's planned
 ## to get complete sooner or later
@@ -27,34 +44,44 @@ class Nurupo(Resource):
 ## redirect, neither is able to get user injected.
 ## Auth-based REST endpoints won't be fully functional until 0.6 in most cases
 
-@rest.route('/user/@me')
-class UserInfoMe(Resource):
-    @auth_required(required=True)
-    def get(self, user: User):
-        return redirect(url_for('rest.UserInfo', user.id)), 302
 
-@rest.route('/user/<b32l:id>')
-class UserInfo(Resource):
-    def get(self, id: int):
-        ## TODO sanizize REST to make blocked users inaccessible
-        u: User | None = db.session.execute(select(User).where(User.id == id)).scalar()
+@bp.get('/user/@me')
+@login_required
+async def get_user_me():
+    return redirect(url_for(f'rest.user_get', current_user.id)), 302
+
+@bp.get('/user/<b32l:id>')
+async def user_get(id: int):
+    ## TODO sanizize REST to make blocked users inaccessible
+    async with db as session:
+        u: User | None = (await session.execute(select(User).where(User.id == id))).scalar()
         if u is None:
             return dict(error='User not found'), 404
         uj = dict(
             id = f'{Snowflake(u.id):l}',
             username = u.username,
             display_name = u.display_name,
-            joined_at = u.joined_at.isoformat('T'),
+            joined_at = want_isodate(u.joined_at),
             karma = u.karma,
-            age = u.age()
+            age = u.age(),
+            biography=u.biography,
+            badges = u.badges()
         )
-        return dict(users={f'{Snowflake(id):l}': uj})
+    return dict(users={f'{Snowflake(id):l}': uj})
+
+@bp.get('/user/@<username>')
+async def resolve_user(username: str):
+    async with db as session:
+        uid: User | None = (await session.execute(select(User.id).select_from(User).where(User.username == username))).scalar()
+    if uid is None:
+        abort(404, 'User not found')
+    return redirect(url_for('rest.user_get', id=uid)), 302
 
 
-@rest.route('/post/<b32l:id>')
-class SinglePost(Resource):
-    def get(self, id: int):
-        p: Post | None = db.session.execute(select(Post).where(Post.id == id)).scalar()
+@bp.get('/post/<b32l:id>')
+async def get_post(id: int):
+    async with db as session:
+        p: Post | None = (await session.execute(select(Post).where(Post.id == id))).scalar()
         if p is None:
             return dict(error='Not found'), 404
         pj = dict(
@@ -65,4 +92,4 @@ class SinglePost(Resource):
             created_at = p.created_at.isoformat('T')
         )
 
-        return dict(posts={f'{Snowflake(id):l}': pj})
+    return dict(posts={f'{Snowflake(id):l}': pj})

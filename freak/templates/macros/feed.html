@@ -13,8 +13,8 @@
 	  - <time datetime="{{ p.created_at.isoformat('T') }}">{{ p.created_at.strftime('%B %-d, %Y at %H:%M') }}</time>
 	</div>
 	<div class="message-stats">
-		{{ feed_upvote(p.id, p.upvotes(), p.upvoted_by(current_user)) }}
-		{{ comment_count(p.comments | count) }}
+		{{ feed_upvote(p.id, p.upvotes(), p.upvoted_by(current_user.user)) }}
+		{{ comment_count(p.comment_count()) }}
 	</div>
 
 	<div class="message-content shorten">
@@ -53,12 +53,12 @@
     {% call callout('delete') %}<i>Removed comment</i>{% endcall %}
   {% else %}
   <div class="message-meta">
-	{% if comment.author %}
+	{% if comment.author_id %}
     <a href="{{ comment.author.url() }}">{{ comment.author.handle() }}</a>
 	{% else %}
 	<i>deleted account</i>
 	{% endif %}
-	{% if comment.author and comment.author == comment.parent_post.author %}
+	{% if comment.author and comment.author_id == comment.parent_post.author_id %}
 	<span class="faint">(OP)</span>
 	{% endif %}
 	{# TODO add is_distinguished i.e. official comment #}
@@ -70,7 +70,7 @@
     {{ comment.text_content | to_markdown }}
   </div>
   <ul class="message-options inline">
-    {% if comment.author == current_user %}
+    {% if comment.author_id == current_user.id %}
 	{# TODO add comment edit link #}
 	{% else %}
 	<li><a href="{{ comment.report_url() }}">{{ icon('report') }} Report</a></li>

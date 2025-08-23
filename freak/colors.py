@@ -21,7 +21,7 @@ color_themes = [
     ColorTheme(10, 'Defoko'),
     ColorTheme(11, 'Kaito'),
     ColorTheme(12, 'Meiko'),
-    ColorTheme(13, 'Leek'),
+    ColorTheme(13, 'WhatsApp'),
     ColorTheme(14, 'Teto'),
     ColorTheme(15, 'Ruby')
 ]

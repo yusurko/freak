@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.0
+
+- Switched to Quart frontend
+- **BREAKING**: `SERVER_NAME` env variable now contains the domain name. `DOMAIN_NAME` has been removed.
+- libsuou bumped to 0.5.0
+
 ## 0.4.0
 
 - Added dependency to [SUOU](https://github.com/sakuragasaki46/suou) library
