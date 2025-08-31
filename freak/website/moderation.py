@@ -1,10 +1,12 @@
 
+from __future__ import annotations
 from quart import Blueprint, abort, flash, render_template, request
 from quart_auth import current_user, login_required
 from sqlalchemy import select
 import datetime
 
-from freak.utils import get_request_form
+from .. import UserLoader
+from ..utils import get_request_form
 
 from ..models import db, User, Guild
 

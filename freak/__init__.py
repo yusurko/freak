@@ -26,7 +26,7 @@ from suou import twocolon_list, WantsContentType
 
 from .colors import color_themes, theme_classes
 
-__version__ = '0.5.0-dev33'
+__version__ = '0.5.0-dev34'
 
 APP_BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -253,15 +253,15 @@ async def find_guild_or_user(name: str) -> str | None:
         gu = (await session.execute(select(Guild).where(Guild.name == name))).scalar()
         user = (await session.execute(select(User).where(User.username == name))).scalar()
     
-    if gu is not None:
-        await flash(f'There is nothing at /{name}. Luckily, a guild with name {gu.handle()} happens to exist. Next time, remember to add + before!')
-        return gu.url()
+        if gu is not None:
+            await flash(f'There is nothing at /{name}. Luckily, a guild with name {gu.handle()} happens to exist. Next time, remember to add + before!')
+            return gu.url()
 
-    if user is not None:
-        await flash(f'There is nothing at /{name}. Luckily, a user named {user.handle()} happens to exist. Next time, remember to add @ before!')
-        return user.url()
+        if user is not None:
+            await flash(f'There is nothing at /{name}. Luckily, a user named {user.handle()} happens to exist. Next time, remember to add @ before!')
+            return user.url()
 
-    return None
+        return None
 
 @app.errorhandler(404)
 async def error_404(body):
@@ -273,6 +273,7 @@ async def error_404(body):
     except Exception as e:
         logger.error(f'Exception in find_guild_or_user: {e}')
         pass
+    print(request.host)
     return await error_handler_for(404, 'Not found', '404.html')
 
 @app.errorhandler(405)
