@@ -9,8 +9,8 @@ from operator import or_
 import re
 from threading import Lock
 from typing import Any, Callable
-from quart_auth import AuthUser, current_user
-from sqlalchemy import Column, ExceptionContext, Integer, String, ForeignKey, UniqueConstraint, and_, insert, text, \
+from quart_auth import current_user
+from sqlalchemy import Column, Integer, String, ForeignKey, UniqueConstraint, and_, insert, text, \
     CheckConstraint, Date, DateTime, Boolean, func, BigInteger, \
     SmallInteger, select, update, Table
 from sqlalchemy.orm import Relationship, relationship
@@ -19,12 +19,10 @@ from suou import SiqType, Snowflake, Wanted, deprecated, makelist, not_implement
 from suou.sqlalchemy import create_session, declarative_base, id_column, parent_children, snowflake_column
 from werkzeug.security import check_password_hash
 
-from . import UserLoader, app_config
+from . import app_config
 from .utils import get_remote_addr
 
 from suou import timed_cache, age_and_days
-
-current_user: UserLoader
 
 import logging 
 
@@ -119,6 +117,9 @@ db = SQLAlchemy(model_class=Base)
 
 CSI = create_session_interactively = partial(create_session, app_config.database_url)
 
+
+## .accounts requires db
+#current_user: UserLoader
 
 
 ## Many-to-many relationship keys for some reasons have to go
@@ -221,18 +222,22 @@ class User(Base):
     def age(self):
         return age_and_days(self.gdpr_birthday)[0]
 
-    def simple_info(self):
+    def simple_info(self, *, typed = False):
         """
         Return essential informations for representing a user in the REST
         """
         ## XXX change func name?
-        return dict(
+        gg = dict(
             id = Snowflake(self.id).to_b32l(),
             username = self.username,
             display_name = self.display_name,
             age = self.age(),
-            badges = self.badges()
+            badges = self.badges(),
+
         )
+        if typed:
+            gg['type'] = 'user'
+        return gg
 
     @deprecated('updates may be not atomic. DO NOT USE until further notice')
     async def reward(self, points=1):
@@ -482,6 +487,21 @@ class Guild(Base):
             async with db as session:
                 session.execute(update(Member).where(Member.user_id == u.id, Member.guild_id == self.id).values(**values))
         return m
+
+    def simple_info(self, *, typed=False):
+        """
+        Return essential informations for representing a guild in the REST
+        """
+        ## XXX change func name?
+        gg = dict(
+            id = Snowflake(self.id).to_b32l(),
+            name = self.name,
+            display_name = self.display_name,
+            badges = []
+        )
+        if typed:
+            gg['type'] = 'guild'
+        return gg
         
 
 Topic = deprecated('renamed to Guild')(Guild)
@@ -621,6 +641,8 @@ class Post(Base):
         return or_(Post.author_id == user_id, Post.privacy == 0)
         #return or_(Post.author_id == user_id, and_(Post.privacy.in_((0, 1)), ~Post.author.has_blocked_q(user_id)))
 
+    def is_text_post(self):
+        return self.post_type == POST_TYPE_DEFAULT
 
 class Comment(Base):
     __tablename__ = 'freak_comment'
@@ -714,5 +736,6 @@ class UserStrike(Base):
     issued_by = relationship(User, primaryjoin= lambda: User.id == UserStrike.issued_by_id, lazy='selectin')
 
 # PostUpvote table is at the top !!
+
 
 

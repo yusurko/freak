@@ -26,7 +26,7 @@ from suou import twocolon_list, WantsContentType
 
 from .colors import color_themes, theme_classes
 
-__version__ = '0.5.0-dev34'
+__version__ = '0.5.0-dev35'
 
 APP_BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -57,57 +57,10 @@ app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 app.config['QUART_AUTH_DURATION'] = 365 * 24 * 60 * 60
 app.config['SERVER_NAME'] = app_config.server_name
 
-class UserLoader(AuthUser):
-    """
-    Loads user from the session.
-
-    *WARNING* requires to be awaited before request before usage!
-
-    Actual User object is at .user; other attributes are proxied.
-    """
-    def __init__(self, auth_id: str | None, action: QA_Action= QA_Action.PASS):
-        self._auth_id = auth_id
-        self._auth_obj = None
-        self._auth_sess = None
-        self.action = action
-    
-    @property
-    def auth_id(self) -> str | None:
-        return self._auth_id
-
-    @property
-    async def is_authenticated(self) -> bool:
-        await self._load()
-        return self._auth_id is not None
-
-    async def _load(self):
-        if self._auth_obj is None and self._auth_id is not None:
-            session = self._auth_sess = await db.begin()
-            self._auth_obj = (await session.execute(select(User).where(User.id == int(self._auth_id)))).scalar()
-            if self._auth_obj is None:
-                raise RuntimeError('failed to fetch user')
-
-    def __getattr__(self, key):
-        if self._auth_obj is None:
-            raise RuntimeError('user is not loaded')
-        return getattr(self._auth_obj, key)
-
-    def __bool__(self):
-        return self._auth_obj is not None
-
-    async def _unload(self):
-        # user is not expected to mutate
-        if self._auth_sess:
-            await self._auth_sess.rollback()
-
-    @property
-    def user(self):
-        return self._auth_obj
-
-    id: int
 
 ## DO NOT ADD LOCAL IMPORTS BEFORE THIS LINE
 
+from .accounts import UserLoader
 from .models import Guild, db, User, Post
 
 # SASS
@@ -190,7 +143,7 @@ async def _load_user():
         g.no_user = True
 
 @app.after_request
-async def _unload_request(resp):
+async def _unload_user(resp):
     try:
         await current_user._unload()
     except RuntimeError as e:

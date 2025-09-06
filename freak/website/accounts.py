@@ -24,25 +24,7 @@ logger = logging.getLogger(__name__)
 
 bp = Blueprint('accounts', __name__)
 
-class LoginStatus(enum.Enum):
-    SUCCESS = 0
-    ERROR = 1
-    SUSPENDED = 2
-    PASS_EXPIRED = 3
-
-def check_login(user: User | None, password: str) -> LoginStatus:
-    try:
-        if user is None:
-            return LoginStatus.ERROR
-        if ('$' not in user.passhash) and user.email:
-            return LoginStatus.PASS_EXPIRED
-        if not user.is_active:
-            return LoginStatus.SUSPENDED
-        if user.check_password(password):
-            return LoginStatus.SUCCESS
-    except Exception as e:
-        logger.error(f'{e}')
-    return LoginStatus.ERROR
+from ..accounts import LoginStatus, check_login
 
 
 @bp.get('/login')
