@@ -2,9 +2,10 @@
 
 ## 0.5.0
 
-- Switched to Quart frontend
+- Switched to Quart framework. This implies everything is `async def` now.
 - **BREAKING**: `SERVER_NAME` env variable now contains the domain name. `DOMAIN_NAME` has been removed.
-- libsuou bumped to 0.5.0
+- libsuou bumped to 0.6.0
+- Added several REST routes. Change needed due to pending frontend separation.
 
 ## 0.4.0
 
