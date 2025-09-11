@@ -39,6 +39,7 @@ class AppConfig(ConfigOptions):
     app_name = ConfigValue()
     server_name = ConfigValue()
     private_assets = ConfigValue(cast=ssv_list)
+    # deprecated
     jquery_url = ConfigValue(default='https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js')
     app_is_behind_proxy = ConfigValue(cast=int, default=0)
     impressum = ConfigValue(cast=twocolon_list, default='')
@@ -141,6 +142,7 @@ async def _load_user():
     except RuntimeError as e:
         logger.error(f'{e}')
         g.no_user = True
+
 
 @app.after_request
 async def _unload_user(resp):

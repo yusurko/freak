@@ -13,17 +13,21 @@ from werkzeug.security import check_password_hash
 from suou.quart import add_rest
 
 from freak.accounts import LoginStatus, check_login
-from freak.algorithms import topic_timeline
+from freak.algorithms import topic_timeline, user_timeline
 
 from ..models import Guild, Post, User, db
-from .. import UserLoader, app, app_config,  __version__ as freak_version
+from .. import UserLoader, app, app_config,  __version__ as freak_version, csrf
 
 bp = Blueprint('rest', __name__, url_prefix='/v1')
 rest = add_rest(app, '/v1', '/ajax')
 
+## XXX potential security hole, but needed for REST to work
+csrf.exempt(bp)
+
 current_user: UserLoader
 
 ## TODO deprecate auth_required since it does not work
+## will be removed in 0.6
 from suou.flask_sqlalchemy import require_auth
 auth_required = deprecated('use login_required() and current_user instead')(require_auth(User, db))
 
@@ -37,11 +41,22 @@ async def get_nurupo():
 
 @bp.get('/health')
 async def health():
+    async with db as session:
+        hi =  dict(
+            version=freak_version,
+            name = app_config.app_name,
+            post_count = await Post.count(),
+            user_count = await User.active_count(),
+            me = Snowflake(current_user.id).to_b32l() if current_user else None
+        )
+
+        return hi
+
+@bp.get('/oath')
+async def oath():
     return dict(
-        version=freak_version,
-        name = app_config.app_name,
-        post_count = await Post.count(),
-        user_count = await User.active_count()
+        ## XXX might break any time!
+        csrf_token= await csrf._get_csrf_token()
     )
 
 ## TODO coverage of REST is still partial, but it's planned
@@ -56,16 +71,10 @@ async def health():
 @bp.get('/user/@me')
 @login_required
 async def get_user_me():
-    return redirect(url_for(f'rest.user_get', current_user.id)), 302
+    return redirect(url_for(f'rest.user_get', id=current_user.id)), 302
 
-@bp.get('/user/<b32l:id>')
-async def user_get(id: int):
-    ## TODO sanizize REST to make blocked users inaccessible
-    async with db as session:
-        u: User | None = (await session.execute(select(User).where(User.id == id))).scalar()
-        if u is None:
-            return dict(error='User not found'), 404
-        uj = dict(
+def _user_info(u: User):
+    return dict(
             id = f'{Snowflake(u.id):l}',
             username = u.username,
             display_name = u.display_name,
@@ -75,7 +84,32 @@ async def user_get(id: int):
             biography=u.biography,
             badges = u.badges()
         )
+
+@bp.get('/user/<b32l:id>')
+async def user_get(id: int):
+    ## TODO sanizize REST to make blocked users inaccessible
+    async with db as session:
+        u: User | None = (await session.execute(select(User).where(User.id == id))).scalar()
+        if u is None:
+            return dict(error='User not found'), 404
+        uj = _user_info(u)
     return dict(users={f'{Snowflake(id):l}': uj})
+
+@bp.get('/user/<b32l:id>/feed')
+async def user_feed_get(id: int):
+    async with db as session:
+        u: User | None = (await session.execute(select(User).where(User.id == id))).scalar()
+        if u is None:
+            return dict(error='User not found'), 404
+        uj = _user_info(u)
+
+        feed = []
+        algo = user_timeline(u)
+        posts = await db.paginate(algo)
+        async for p in posts:
+            feed.append(p.feed_info())
+
+    return dict(users={f'{Snowflake(id):l}': uj}, feed=feed)
 
 @bp.get('/user/@<username>')
 async def resolve_user(username: str):
@@ -84,6 +118,14 @@ async def resolve_user(username: str):
     if uid is None:
         abort(404, 'User not found')
     return redirect(url_for('rest.user_get', id=uid)), 302
+
+@bp.get('/user/@<username>/feed')
+async def resolve_user_feed(username: str):
+    async with db as session:
+        uid: User | None = (await session.execute(select(User.id).select_from(User).where(User.username == username))).scalar()
+    if uid is None:
+        abort(404, 'User not found')
+    return redirect(url_for('rest.user_feed_get', id=uid)), 302
 
 ## POSTS ##
 
@@ -138,8 +180,6 @@ async def guild_feed(gname: str):
         if gu is None:
             return dict(error='Not found'), 404
         gj = await _guild_info(gu)
-
-        # TODO add feed
         feed = []
         algo = topic_timeline(gname)
         posts = await db.paginate(algo)
@@ -158,8 +198,6 @@ class LoginIn(BaseModel):
 @bp.post('/login')
 @validate_request(LoginIn)
 async def login(data: LoginIn):
-    
-    print(data)
     async with db as session:
         u = (await session.execute(select(User).where(User.username == data.username))).scalar()
         match check_login(u, data.password):
@@ -169,7 +207,7 @@ async def login(data: LoginIn):
                     login_user(UserLoader(u.get_id()), remember=True)
                 else:
                     login_user(UserLoader(u.get_id()))
-                return {'id': f'{Snowflake(u.id):l}'}, 204
+                return {'id': f'{Snowflake(u.id):l}'}, 200
             case LoginStatus.ERROR:
                 abort(404, 'Invalid username or password')
             case LoginStatus.SUSPENDED:
@@ -182,5 +220,5 @@ async def login(data: LoginIn):
 @login_required
 async def logout():
     logout_user()
-    return {}, 204
+    return '', 204
 
