@@ -79,3 +79,5 @@ class UserLoader(AuthUser):
         return self._auth_obj
 
     id: int
+    username: str
+    display_name: str

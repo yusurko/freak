@@ -644,6 +644,16 @@ class Post(Base):
     def is_text_post(self):
         return self.post_type == POST_TYPE_DEFAULT
 
+    def feed_info(self):
+        return dict(
+            id=Snowflake(self.id).to_b32l(),
+            slug = self.slug,
+            title = self.title,
+            author = self.author.simple_info(),
+            to = self.topic_or_user().simple_info(),
+            created_at = self.created_at
+        )
+
 class Comment(Base):
     __tablename__ = 'freak_comment'
     __table_args__ = (

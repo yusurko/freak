@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from flask import abort
 from pydantic import BaseModel
-from quart import Blueprint, redirect, url_for
+from quart import Blueprint, redirect, request, url_for
 from quart_auth import AuthUser, current_user, login_required, login_user, logout_user
 from quart_schema import QuartSchema, validate_request, validate_response
 from sqlalchemy import select
@@ -48,9 +48,10 @@ async def health():
 ## to get complete sooner or later
 
 ## XXX there is a bug in suou.sqlalchemy.auth_required() — apparently, /user/@me does not
-## redirect, neither is able to get user injected.
+## redirect, neither is able to get user injected. It was therefore dismissed.
 ## Auth-based REST endpoints won't be fully functional until 0.6 in most cases
 
+## USERS ##
 
 @bp.get('/user/@me')
 @login_required
@@ -84,6 +85,7 @@ async def resolve_user(username: str):
         abort(404, 'User not found')
     return redirect(url_for('rest.user_get', id=uid)), 302
 
+## POSTS ##
 
 @bp.get('/post/<b32l:id>')
 async def get_post(id: int):
@@ -103,6 +105,8 @@ async def get_post(id: int):
             pj['content'] = p.text_content
 
     return dict(posts={f'{Snowflake(id):l}': pj})
+
+## GUILDS ##
 
 async def _guild_info(gu: Guild):
     return dict(
@@ -138,21 +142,24 @@ async def guild_feed(gname: str):
         # TODO add feed
         feed = []
         algo = topic_timeline(gname)
-        posts: list[Post] = makelist((await db.paginate(algo)))
-        for p in posts:
+        posts = await db.paginate(algo)
+        async for p in posts:
             feed.append(p.feed_info())
 
     return dict(guilds={f'{Snowflake(gu.id):l}': gj}, feed=feed)
 
+## LOGIN/OUT ##
 
 class LoginIn(BaseModel):
     username: str
     password: str
-    remember: bool
+    remember: bool = False
 
 @bp.post('/login')
 @validate_request(LoginIn)
 async def login(data: LoginIn):
+    
+    print(data)
     async with db as session:
         u = (await session.execute(select(User).where(User.username == data.username))).scalar()
         match check_login(u, data.password):
