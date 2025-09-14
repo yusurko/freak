@@ -228,7 +228,9 @@ async def error_404(body):
     except Exception as e:
         logger.error(f'Exception in find_guild_or_user: {e}')
         pass
-    print(request.host)
+    if app_config.server_name not in (None, request.host): 
+        logger.warning(f'request host {request.host!r} is different from configured server name {app_config.server_name}')
+        return redirect('//' + app_config.server_name + request.full_path), 307
     return await error_handler_for(404, 'Not found', '404.html')
 
 @app.errorhandler(405)

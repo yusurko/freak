@@ -13,7 +13,7 @@ from werkzeug.security import check_password_hash
 from suou.quart import add_rest
 
 from freak.accounts import LoginStatus, check_login
-from freak.algorithms import topic_timeline, user_timeline
+from freak.algorithms import public_timeline, topic_timeline, user_timeline
 
 from ..models import Guild, Post, User, db
 from .. import UserLoader, app, app_config,  __version__ as freak_version, csrf
@@ -221,4 +221,19 @@ async def login(data: LoginIn):
 async def logout():
     logout_user()
     return '', 204
+
+
+## HOME ##
+
+@bp.get('/home/feed')
+@login_required
+async def home_feed():
+    async with db as session:
+        me = current_user.user
+        posts = await db.paginate(public_timeline())
+        feed = []
+        async for post in posts:
+            feed.append(post.feed_info())
+
+        return dict(feed=feed)
 
