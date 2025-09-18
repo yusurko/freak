@@ -502,6 +502,14 @@ class Guild(Base):
         if typed:
             gg['type'] = 'guild'
         return gg
+
+    async def sub_info(self):
+        """
+        Guild info including subscriber count.
+        """
+        gg = self.simple_info()
+        gg['subscriber_count'] = await self.subscriber_count()
+        gg['post_count'] = await self.post_count()
         
 
 Topic = deprecated('renamed to Guild')(Guild)

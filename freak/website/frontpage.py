@@ -11,20 +11,13 @@ from freak.utils import get_request_form
 
 from ..search import SearchQuery
 from ..models import Guild, Member, Post, User, db
-from ..algorithms import public_timeline, topic_timeline
+from ..algorithms import public_timeline, top_guilds_query, topic_timeline
 
 current_user: UserLoader
 
 bp = Blueprint('frontpage', __name__)
 
-def top_guilds_query():
-    q_post_count = func.count(distinct(Post.id)).label('post_count')
-    q_sub_count = func.count(distinct(Member.id)).label('sub_count')
-    qr = select(Guild.name, q_post_count, q_sub_count)\
-        .join(Post, Post.topic_id == Guild.id, isouter=True)\
-        .join(Member, and_(Member.guild_id == Guild.id, Member.is_subscribed == True), isouter=True)\
-        .group_by(Guild).having(q_post_count > 5).order_by(q_post_count.desc(), q_sub_count.desc())
-    return qr
+
 
 @bp.route('/')
 async def homepage():

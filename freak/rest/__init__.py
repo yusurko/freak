@@ -13,7 +13,7 @@ from werkzeug.security import check_password_hash
 from suou.quart import add_rest
 
 from freak.accounts import LoginStatus, check_login
-from freak.algorithms import public_timeline, topic_timeline, user_timeline
+from freak.algorithms import public_timeline, top_guilds_query, topic_timeline, user_timeline
 
 from ..models import Guild, Post, User, db
 from .. import UserLoader, app, app_config,  __version__ as freak_version, csrf
@@ -236,4 +236,15 @@ async def home_feed():
             feed.append(post.feed_info())
 
         return dict(feed=feed)
+
+
+@bp.get('/top/guilds')
+async def top_guilds():
+    async with db as session:
+        top_g = [await x.sub_info() for x in 
+            (await session.execute(top_guilds_query().limit(10))).scalars()]
+
+        return dict(has=top_g)
+        
+    
 
