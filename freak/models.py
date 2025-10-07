@@ -510,6 +510,7 @@ class Guild(Base):
         gg = self.simple_info()
         gg['subscriber_count'] = await self.subscriber_count()
         gg['post_count'] = await self.post_count()
+        return gg
         
 
 Topic = deprecated('renamed to Guild')(Guild)
