@@ -160,6 +160,17 @@ async def _guild_info(gu: Guild):
         badges = []
     )
 
+@bp.get('/guild/<b32l:gid>')
+async def guild_info_id(gid: int):
+    async with db as session:
+        gu: Guild | None = (await session.execute(select(Guild).where(Guild.id == gid))).scalar()
+
+        if gu is None:
+            return dict(error='Not found'), 404
+        gj = await _guild_info(gu)
+    
+    return dict(guilds={f'{Snowflake(gu.id):l}': gj})
+
 @bp.get('/guild/@<gname>')
 async def guild_info_only(gname: str):
     async with db as session:
