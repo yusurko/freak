@@ -47,7 +47,8 @@ async def health():
             name = app_config.app_name,
             post_count = await Post.count(),
             user_count = await User.active_count(),
-            me = Snowflake(current_user.id).to_b32l() if current_user else None
+            me = Snowflake(current_user.id).to_b32l() if current_user else None,
+            theme_color = current_user.theme_color if current_user else 0
         )
 
         return hi
