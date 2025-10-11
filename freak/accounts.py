@@ -81,4 +81,4 @@ class UserLoader(AuthUser):
     id: int
     username: str
     display_name: str
-    theme_color: int
+    color_theme: int
