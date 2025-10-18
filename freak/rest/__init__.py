@@ -1,5 +1,6 @@
 
 from __future__ import annotations
+from typing import Iterable
 
 from flask import abort
 from pydantic import BaseModel
@@ -14,6 +15,7 @@ from suou.quart import add_rest
 
 from freak.accounts import LoginStatus, check_login
 from freak.algorithms import public_timeline, top_guilds_query, topic_timeline, user_timeline
+from freak.search import SearchQuery
 
 from ..models import Guild, Post, User, db
 from .. import UserLoader, app, app_config,  __version__ as freak_version, csrf
@@ -257,6 +259,20 @@ async def top_guilds():
             (await session.execute(top_guilds_query().limit(10))).scalars()]
 
         return dict(has=top_g)
-        
+
+## SEARCH ##
+
+class QueryIn(BaseModel):
+    query: str
+
+@bp.post('/search/top')
+@validate_request(QueryIn)
+async def search_top(data: QueryIn):
+    async with db as session:
+        sq = SearchQuery(data.query)
+
+        result: Iterable[Post] = (await session.execute(sq.select(Post, [Post.title]).limit(20))).scalars()
+
+        return dict(has = [p.feed_info() for p in result])
     
 
