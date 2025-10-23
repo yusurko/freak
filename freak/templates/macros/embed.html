@@ -1,6 +1,6 @@
 {% macro embed_post(p) %}
   <div id="post-{{ p.id | to_b32l }}" class="post-frame" data-endpoint="{{ p.id | to_b32l }}">
-	<h3 class="message-title"><a href="{{ p.url() }}">{{ p.title }}</a></h3>
+	<h3 class="message-title"><a href="/={{ p.id | to_b32l }}">{{ p.title }}</a></h3>
 	<div class="message-meta">Posted by <a href="{{ p.author.url() }}">@{{ p.author.username }}</a>
 	  {% if p.parent_post %}
 	    as a comment on <a href="{{ p.parent_post.url() }}">post “{{ p.parent_post.title }}”</a>

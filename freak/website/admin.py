@@ -2,9 +2,10 @@
 
 import datetime
 from functools import wraps
+import os
 from typing import Callable
 import warnings
-from quart import Blueprint, abort, redirect, render_template, request, url_for
+from quart import Blueprint, abort, redirect, render_template, request, send_from_directory, url_for
 from quart_auth import current_user
 from markupsafe import Markup
 from sqlalchemy import insert, select, update
@@ -23,11 +24,11 @@ current_user: UserLoader
 
 def admin_required(func: Callable):
     @wraps(func)
-    def wrapper(*a, **ka):
+    async def wrapper(*a, **ka):
         user: User = current_user.user
         if not user or not user.is_administrator:
             abort(403)
-        return func(*a, **ka)
+        return await func(*a, **ka)
     return wrapper
 
 
@@ -155,10 +156,14 @@ def escalate_report(target, source: PostReport):
 async def homepage():
     return await render_template('admin/admin_home.html')
 
+@bp.route('/admin/style.css')
+async def style_css():
+    return await send_from_directory(os.path.dirname(os.path.dirname(__file__)) + '/static/css', 'style.css')
+
 @bp.route('/admin/reports/')
 @admin_required
 async def reports():
-    report_list = db.paginate(select(PostReport).order_by(PostReport.id.desc()))
+    report_list = await db.paginate(select(PostReport).order_by(PostReport.id.desc()))
     return await render_template('admin/admin_reports.html',
     report_list=report_list, report_reasons=REPORT_REASON_STRINGS)
 
@@ -169,10 +174,13 @@ async def report_detail(id: int):
         report = (await session.execute(select(PostReport).where(PostReport.id == id))).scalar()
         if report is None:
             abort(404)
+        target = await report.target()
+        if target is None:
+            abort(404)
         if request.method == 'POST':
             form = await get_request_form()
             action = REPORT_ACTIONS[form['do']]
-            await action(report.target(), report)
+            await action(target, report)
             return redirect(url_for('admin.reports'))
     return await render_template('admin/admin_report_detail.html', report=report,
         report_reasons=REPORT_REASON_STRINGS)
@@ -188,7 +196,7 @@ async def strikes():
 @bp.route('/admin/users/')
 @admin_required
 async def users():
-    user_list = db.paginate(select(User).order_by(User.joined_at.desc()))
+    user_list = await db.paginate(select(User).order_by(User.joined_at.desc()))
     return await render_template('admin/admin_users.html',
     user_list=user_list, account_status_string=colorized_account_status_string)
 
@@ -219,5 +227,7 @@ async def user_detail(id: int):
             else:
                 abort(400)
         strikes = (await session.execute(select(UserStrike).where(UserStrike.user_id == id).order_by(UserStrike.id.desc()))).scalars()
-    return render_template('admin/admin_user_detail.html', u=u,
+    return await render_template('admin/admin_user_detail.html', u=u,
     report_reasons=REPORT_REASON_STRINGS, account_status_string=colorized_account_status_string, strikes=strikes)
+
+

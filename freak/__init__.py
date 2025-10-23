@@ -163,6 +163,8 @@ async def error_handler_for(status: int, message: str, template: str):
         case WantsContentType.JSON:
             return jsonify({'error': f'{message}', 'status': status}), status
         case WantsContentType.HTML:
+            if request.path.startswith('/admin'):
+                return await render_template('admin/' + template, message=f'{message}'), status
             return await render_template(template, message=f'{message}'), status
         case WantsContentType.PLAIN:
             return f'{message} (HTTP {status})', status, {'content-type': 'text/plain; charset=UTF-8'}

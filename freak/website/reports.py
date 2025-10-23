@@ -5,6 +5,7 @@ from __future__ import annotations
 from quart import Blueprint, render_template, request
 from quart_auth import current_user, login_required
 from sqlalchemy import insert, select
+from suou import Snowflake
 
 from freak import UserLoader
 from ..models import REPORT_TARGET_COMMENT, REPORT_TARGET_POST, ReportReason, User, post_report_reasons, Comment, Post, PostReport, REPORT_REASONS, db
@@ -35,7 +36,7 @@ async def report_post(id: int):
                 reason_code = REPORT_REASONS[reason]
             ))
             session.commit()
-            return await render_template('reports/report_done.html', back_to_url=p.url())
+            return await render_template('reports/report_done.html', back_to_url='/=' + Snowflake(p.id).to_b32l())
     return await render_template('reports/report_post.html', id = id,
         report_reasons = post_report_reasons, description_text=description_text)
 
