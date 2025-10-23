@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from collections import namedtuple
 import datetime
 from functools import partial
@@ -662,6 +663,17 @@ class Post(Base):
             to = self.topic_or_user().simple_info(),
             created_at = self.created_at
         )
+
+    async def feed_info_counts(self):
+        pj = self.feed_info()
+        if self.is_text_post():
+            pj['content'] = self.text_content[:181]
+        (pj['comment_count'], pj['votes'], pj['my_vote']) = await asyncio.gather(
+            self.comment_count(), 
+            self.upvotes(),
+            self.upvoted_by(current_user.user)
+        )
+        return pj
 
 class Comment(Base):
     __tablename__ = 'freak_comment'
