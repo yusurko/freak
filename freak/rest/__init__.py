@@ -2,9 +2,9 @@
 from __future__ import annotations
 from typing import Iterable
 
-from flask import abort
+from quart import session
+from quart import abort, Blueprint, redirect, request, url_for
 from pydantic import BaseModel
-from quart import Blueprint, redirect, request, url_for
 from quart_auth import AuthUser, current_user, login_required, login_user, logout_user
 from quart_schema import QuartSchema, validate_request, validate_response
 from sqlalchemy import select
@@ -57,9 +57,15 @@ async def health():
 
 @bp.get('/oath')
 async def oath():
+    try:
+        ## pull csrf token from session
+        csrf_tok = session['csrf_token']
+    except Exception as e:
+        print(e)
+        abort(503, "csrf_token is null")
     return dict(
         ## XXX might break any time!
-        csrf_token= await csrf._get_csrf_token()
+        csrf_token= csrf_tok
     )
 
 ## TODO coverage of REST is still partial, but it's planned
@@ -272,7 +278,23 @@ async def search_top(data: QueryIn):
         sq = SearchQuery(data.query)
 
         result: Iterable[Post] = (await session.execute(sq.select(Post, [Post.title]).limit(20))).scalars()
-
+        
         return dict(has = [p.feed_info() for p in result])
     
+
+## SUGGEST
+
+
+@bp.post("/suggest/guild")
+@validate_request(QueryIn)
+async def suggest_guild(data: QueryIn):
+    if not data.query.isidentifier():
+        return dict(has=[])
+    async with db as session:
+        sq = select(Guild).where(Guild.name.like(data.query + "%"))
+
+        result: Iterable[Guild] = (await session.execute(sq.limit(10))).scalars()
+
+        return dict(has = [g.simple_info() for g in result])
+
 
