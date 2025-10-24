@@ -17,7 +17,7 @@ from freak.accounts import LoginStatus, check_login
 from freak.algorithms import public_timeline, top_guilds_query, topic_timeline, user_timeline
 from freak.search import SearchQuery
 
-from ..models import Guild, Post, PostUpvote, User, db
+from ..models import Comment, Guild, Post, PostUpvote, User, db
 from .. import UserLoader, app, app_config,  __version__ as freak_version, csrf
 
 bp = Blueprint('rest', __name__, url_prefix='/v1')
@@ -192,7 +192,25 @@ async def upvote_post(id: int, data: VoteIn):
         
         await session.commit()
         return { 'votes': await p.upvotes() }
+
+## COMMENTS ##
+
+@bp.get('/post/<b32l:id>/comments')
+async def post_comments (id: int):
+    async with db as session:
+        p: Post | None = (await session.execute(select(Post).where(Post.id == id))).scalar()
+
+        if p is None:
+            return { 'status': 404, 'error': 'Post not found' }, 404
         
+        l = []
+        for com in await p.top_level_comments():
+            com: Comment
+            l.append(await com.section_info())
+        
+        return dict(has=l)
+
+
 
 ## GUILDS ##
 
@@ -332,6 +350,6 @@ async def suggest_guild(data: QueryIn):
 
         result: Iterable[Guild] = (await session.execute(sq.limit(10))).scalars()
 
-        return dict(has = [g.simple_info() for g in result])
+        return dict(has = [g.simple_info() for g in result if await g.allows_posting(current_user.user)])
 
 

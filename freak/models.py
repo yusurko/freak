@@ -16,7 +16,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, UniqueConstraint, an
     SmallInteger, select, update, Table
 from sqlalchemy.orm import Relationship, relationship
 from suou.sqlalchemy_async import SQLAlchemy
-from suou import SiqType, Snowflake, Wanted, deprecated, makelist, not_implemented
+from suou import SiqType, Snowflake, Wanted, deprecated, makelist, not_implemented, want_isodate
 from suou.sqlalchemy import create_session, declarative_base, id_column, parent_children, snowflake_column
 from werkzeug.security import check_password_hash
 
@@ -706,6 +706,18 @@ class Comment(Base):
     def url(self):
         return self.parent_post.url() + f'/comment/{Snowflake(self.id):l}'
 
+    async def is_parent_locked(self):
+        if self.is_locked:
+            return True
+        if self.parent_comment_id == None:
+            return False
+        async with db as session:
+            parent = (await session.execute(select(Comment).where(Comment.id == self.parent_comment_id))).scalar()
+            try:
+                return parent.is_parent_locked()
+            except RecursionError:
+                return True
+
     def report_url(self) -> str:
         return f'/report/comment/{Snowflake(self.id):l}' 
 
@@ -720,6 +732,21 @@ class Comment(Base):
     @classmethod
     def not_removed(cls):
         return Post.removed_at == None
+
+    async def section_info(self):
+        obj = dict(
+            id = Snowflake(self.id).to_b32l(),
+            parent = dict(id=Snowflake(self.parent_comment_id)) if self.parent_comment_id else None,
+            locked = await self.is_parent_locked(),
+            created_at = want_isodate(self.created_at)
+        )
+        if self.is_removed:
+            obj['removed'] = self.removed_reason
+        else:
+            obj['content'] = self.text_content
+
+        return obj
+
 
 class PostReport(Base):
     __tablename__ = 'freak_postreport'
