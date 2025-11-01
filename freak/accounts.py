@@ -5,6 +5,7 @@ import enum
 
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
+from suou.sqlalchemy.asyncio import AsyncSession
 from .models import User, db
 from quart_auth import AuthUser, Action as _Action
 
@@ -42,7 +43,7 @@ class UserLoader(AuthUser):
     def __init__(self, auth_id: str | None, action: _Action= _Action.PASS):
         self._auth_id = auth_id
         self._auth_obj = None
-        self._auth_sess = None
+        self._auth_sess: AsyncSession | None = None
         self.action = action
     
     @property
@@ -68,6 +69,10 @@ class UserLoader(AuthUser):
 
     def __bool__(self):
         return self._auth_obj is not None
+
+    @property
+    def session(self):
+        return self._auth_sess
 
     async def _unload(self):
         # user is not expected to mutate

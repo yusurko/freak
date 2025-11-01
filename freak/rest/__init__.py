@@ -1,15 +1,16 @@
 
 from __future__ import annotations
-from typing import Iterable
+from typing import Iterable, TypeVar
 
 from quart import session
 from quart import abort, Blueprint, redirect, request, url_for
 from pydantic import BaseModel
-from quart_auth import AuthUser, current_user, login_required, login_user, logout_user
-from quart_schema import QuartSchema, validate_request, validate_response
+from quart_auth import current_user, login_required, login_user, logout_user
+from quart_schema import  validate_request, validate_response
 from sqlalchemy import delete, insert, select
 from suou import Snowflake, deprecated, makelist, not_implemented, want_isodate
 
+from suou.classtools import MISSING, MissingType
 from werkzeug.security import check_password_hash
 from suou.quart import add_rest
 
@@ -19,6 +20,8 @@ from freak.search import SearchQuery
 
 from ..models import Comment, Guild, Post, PostUpvote, User, db
 from .. import UserLoader, app, app_config,  __version__ as freak_version, csrf
+
+_T = TypeVar('_T')
 
 bp = Blueprint('rest', __name__, url_prefix='/v1')
 rest = add_rest(app, '/v1', '/ajax')
@@ -332,7 +335,7 @@ async def search_top(data: QueryIn):
     async with db as session:
         sq = SearchQuery(data.query)
 
-        result: Iterable[Post] = (await session.execute(sq.select(Post, [Post.title]).limit(20))).scalars()
+        result = (await session.execute(sq.select(Post, [Post.title]).limit(20))).scalars()
         
         return dict(has = [p.feed_info() for p in result])
     
@@ -353,3 +356,39 @@ async def suggest_guild(data: QueryIn):
         return dict(has = [g.simple_info() for g in result if await g.allows_posting(current_user.user)])
 
 
+## SETTINGS
+
+@bp.get("/settings/appearance")
+@login_required
+async def get_settings_appearance():
+    return dict(
+        color_theme = current_user.user.color_theme
+    )
+
+
+class SettingsAppearanceIn(BaseModel):
+    color_theme : int | None = None
+    color_scheme : int | None = None
+
+
+def _missing_or(obj: _T | MissingType, obj2: _T) -> _T:
+    if obj is None:
+        return obj2
+    return obj
+
+@bp.patch("/settings/appearance")
+@login_required
+@validate_request(SettingsAppearanceIn)
+async def patch_settings_appearance(data: SettingsIn):
+    u = current_user.user
+    if u is None:
+        abort(401)
+    
+    u.color_theme = (
+        _missing_or(data.color_theme, u.color_theme % (1 << 8)) % 256 +
+        _missing_or(data.color_scheme, u.color_theme >> 8) << 8
+    )
+    current_user.session.add(u)
+    await current_user.session.commit()
+
+    return '', 204
