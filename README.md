@@ -11,7 +11,7 @@
     * Unix-like OS (Docker container, Linux or MacOS are all good).
     * **Python** >=3.10. Recommended to use a virtualenv (unless in Docker lol).
     * **PostgreSQL** at least 16.
-    * **Redis**/Valkey (as of 0.4.0 unused in codebase -_-).
+    * **Redis**/Valkey (as of 0.5.0 unused in codebase -_-).
     * **Docker** and **Docker Compose**.
     * A server machine with a public IP address and shell access (mandatory for production, optional for development/staging).
         * First time? I recommend a VPS. The cheapest one starts at €5/month, half a Spotify subscription.
