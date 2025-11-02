@@ -1,6 +1,6 @@
 
 
-from flask_login import current_user
+from quart_auth import current_user
 from sqlalchemy import and_, distinct, func, select
 from suou import not_implemented
 
