@@ -6,6 +6,7 @@
 - **BREAKING**: `SERVER_NAME` env variable now contains the domain name. `DOMAIN_NAME` has been removed.
 - libsuou bumped to 0.6.0
 - Added several REST routes. Change needed due to pending frontend separation.
+- Deprecated the old web routes except for `/report` and `/admin`
 
 ## 0.4.0
 

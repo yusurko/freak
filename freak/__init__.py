@@ -26,7 +26,7 @@ from suou import twocolon_list, WantsContentType
 
 from .colors import color_themes, theme_classes
 
-__version__ = '0.5.0-dev43'
+__version__ = '0.5.0-dev44'
 
 APP_BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -38,6 +38,7 @@ class AppConfig(ConfigOptions):
     database_url = ConfigValue(required=True)
     app_name = ConfigValue()
     server_name = ConfigValue()
+    force_server_name = ConfigValue(cast=bool, default=True)
     private_assets = ConfigValue(cast=ssv_list)
     # deprecated
     jquery_url = ConfigValue(default='https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js')
@@ -56,7 +57,9 @@ app.secret_key = app_config.secret_key
 app.config['SQLALCHEMY_DATABASE_URI'] = app_config.database_url
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 app.config['QUART_AUTH_DURATION'] = 365 * 24 * 60 * 60
-app.config['SERVER_NAME'] = app_config.server_name
+
+if app_config.server_name and app_config.force_server_name:
+    app.config['SERVER_NAME'] = app_config.server_name
 
 
 ## DO NOT ADD LOCAL IMPORTS BEFORE THIS LINE
