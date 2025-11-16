@@ -15,7 +15,7 @@ import dotenv
 from quart_auth import AuthUser, QuartAuth, Action as QA_Action, current_user
 from quart_wtf import CSRFProtect
 from sqlalchemy import inspect, select
-from suou import Snowflake, ssv_list
+from suou import Snowflake, ssv_list, yesno
 from werkzeug.routing import BaseConverter
 from suou.sass import SassAsyncMiddleware
 from suou.quart import negotiate
@@ -26,7 +26,7 @@ from suou import twocolon_list, WantsContentType
 
 from .colors import color_themes, theme_classes
 
-__version__ = '0.5.0-dev44'
+__version__ = '0.5.0-dev45'
 
 APP_BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -38,7 +38,7 @@ class AppConfig(ConfigOptions):
     database_url = ConfigValue(required=True)
     app_name = ConfigValue()
     server_name = ConfigValue()
-    force_server_name = ConfigValue(cast=bool, default=True)
+    force_server_name = ConfigValue(cast=yesno, default=True)
     private_assets = ConfigValue(cast=ssv_list)
     # deprecated
     jquery_url = ConfigValue(default='https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js')

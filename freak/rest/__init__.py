@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import Iterable, TypeVar
 
-from quart import session
+from quart import render_template, session
 from quart import abort, Blueprint, redirect, request, url_for
 from pydantic import BaseModel
 from quart_auth import current_user, login_required, login_user, logout_user
@@ -47,7 +47,7 @@ async def get_nurupo():
 @bp.get('/health')
 async def health():
     async with db as session:
-        hi =  dict(
+        hi = dict(
             version=freak_version,
             name = app_config.app_name,
             post_count = await Post.count(),
@@ -392,3 +392,23 @@ async def patch_settings_appearance(data: SettingsIn):
     await current_user.session.commit()
 
     return '', 204
+
+## TERMS
+
+@bp.get('/about/terms')
+async def terms():
+    return dict(
+        content=await render_template("terms.md")
+    )
+
+@bp.get('/about/privacy')
+async def privacy():
+    return dict(
+        content=await render_template("privacy.md")
+    )
+
+@bp.get('/about/rules')
+async def rules():
+    return dict(
+        content=await render_template("rules.md")
+    )
