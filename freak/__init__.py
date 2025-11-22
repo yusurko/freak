@@ -26,7 +26,7 @@ from suou import twocolon_list, WantsContentType
 
 from .colors import color_themes, theme_classes
 
-__version__ = '0.5.0-dev45'
+__version__ = '0.5.0-dev46'
 
 APP_BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -40,11 +40,12 @@ class AppConfig(ConfigOptions):
     server_name = ConfigValue()
     force_server_name = ConfigValue(cast=yesno, default=True)
     private_assets = ConfigValue(cast=ssv_list)
-    # deprecated
-    jquery_url = ConfigValue(default='https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js')
     app_is_behind_proxy = ConfigValue(cast=int, default=0)
     impressum = ConfigValue(cast=twocolon_list, default='')
     create_guild_threshold = ConfigValue(cast=int, default=15, prefix='freak_')
+    # v-- deprecated --v
+    jquery_url = ConfigValue(default='https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js')
+    # ^----------------^
 
 app_config = AppConfig()
 

@@ -13,6 +13,9 @@
     <a href="?reason={{ opt.code |urlencode }}">{{ opt.description }}</a>
   </li>
   {% endfor %}
+  <li class="faint">
+    <a href="{{ back_to_url or 'javascript:history.go(-1);' }}">I clicked "Report" by mistake</a>
+  </li>
 </ul>
 {% endblock %}
 

@@ -103,7 +103,8 @@ async def accept_report(target, source: PostReport):
         await remove_content(target, source.reason_code)
 
         source.update_status = REPORT_UPDATE_COMPLETE
-        session.add(source)
+        # XXX disabled because of a session conflict
+        #session.add(source)
 
 
 @additem(REPORT_ACTIONS, '2')
@@ -127,21 +128,21 @@ async def strike_report(target, source: PostReport):
                 author.banned_reason = source.reason_code
 
         source.update_status = REPORT_UPDATE_COMPLETE
-        session.add(source)
+        #session.add(source)
 
 
 @additem(REPORT_ACTIONS, '0')
 async def reject_report(target, source: PostReport):
     async with db as session:
         source.update_status = REPORT_UPDATE_REJECTED
-        session.add(source)
+        #session.add(source)
 
 
 @additem(REPORT_ACTIONS, '3')
 async def withhold_report(target, source: PostReport):
     async with db as session:
         source.update_status = REPORT_UPDATE_ON_HOLD
-        session.add(source)
+        #session.add(source)
 
 
 @additem(REPORT_ACTIONS, '4')
@@ -196,7 +197,7 @@ async def strikes():
 @bp.route('/admin/users/')
 @admin_required
 async def users():
-    user_list = await db.paginate(select(User).order_by(User.joined_at.desc()))
+    user_list = await db.paginate(select(User).order_by(User.joined_at.desc()), page=int(request.args.get('page', 1)))
     return await render_template('admin/admin_users.html',
     user_list=user_list, account_status_string=colorized_account_status_string)
 
@@ -204,7 +205,7 @@ async def users():
 @admin_required
 async def user_detail(id: int):
     async with db as session:
-        u = session.execute(select(User).where(User.id == id)).scalar()
+        u = (await session.execute(select(User).where(User.id == id))).scalar()
         if u is None:
             abort(404)
         if request.method == 'POST':
