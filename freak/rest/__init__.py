@@ -1,12 +1,16 @@
 
 from __future__ import annotations
+import datetime
+import sys
 from typing import Iterable, TypeVar
+import logging
 
 from quart import render_template, session
 from quart import abort, Blueprint, redirect, request, url_for
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from quart_auth import current_user, login_required, login_user, logout_user
 from quart_schema import  validate_request, validate_response
+from quart_wtf.csrf import generate_csrf
 from sqlalchemy import delete, insert, select
 from suou import Snowflake, deprecated, makelist, not_implemented, want_isodate
 
@@ -21,6 +25,7 @@ from freak.search import SearchQuery
 from ..models import Comment, Guild, Post, PostUpvote, User, db
 from .. import UserLoader, app, app_config,  __version__ as freak_version, csrf
 
+logger = logging.getLogger(__name__)
 _T = TypeVar('_T')
 
 bp = Blueprint('rest', __name__, url_prefix='/v1')
@@ -64,8 +69,13 @@ async def oath():
         ## pull csrf token from session
         csrf_tok = session['csrf_token']
     except Exception as e:
-        print(e)
-        abort(503, "csrf_token is null")
+        try:
+            logger.warning('CSRF token regenerated!')
+            csrf_tok = session['csrf_token'] = generate_csrf()
+        except Exception as e2:
+            print(e, e2)
+            abort(503, "csrf_token is null")
+
     return dict(
         ## XXX might break any time!
         csrf_token= csrf_tok
@@ -265,6 +275,44 @@ async def guild_feed(gname: str):
             feed.append(await p.feed_info_counts())
 
     return dict(guilds={f'{Snowflake(gu.id):l}': gj}, feed=feed)
+
+
+## CREATE ##
+
+class CreateIn(BaseModel):
+    title: str
+    content: str
+    privacy: int = Field(default=0, ge=0, lt=4)
+
+@bp.post('/guild/@<gname>')
+@login_required
+@validate_request(CreateIn)
+async def guild_post(data: CreateIn, gname: str):
+    async with db as session:
+        user = current_user.user
+        gu: Guild | None = (await session.execute(select(Guild).where(Guild.name == gname))).scalar()
+
+        if gu is None:
+            return dict(error='Not found'), 404
+        if await gu.has_exiled(current_user.user):
+            return dict(error=f'You are banned from +{gname}'), 403
+        if not await gu.allows_posting(current_user.user):
+            return dict(error=f'You can\'t post on +{gname}'), 403
+
+        try: 
+            new_post_id: int = (await session.execute(insert(Post).values(
+                author_id = user.id,
+                topic_id = gu.id,
+                privacy = data.privacy,
+                title = data.title,
+                text_content = data.text
+            ).returning(Post.id))).scalar()
+
+            session.commit()
+            return dict(id=Snowflake(new_post_id).to_b32l()), 200
+        except Exception:
+            sys.excepthook(*sys.exc_info())
+            return {'error': 'Internal Server Error'}, 500
 
 ## LOGIN/OUT ##
 

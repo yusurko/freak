@@ -5,12 +5,12 @@
 - Switched to Quart framework. This implies everything is `async def` now.
 - **BREAKING**: `SERVER_NAME` env variable now contains the domain name. `DOMAIN_NAME` has been removed.
 - libsuou bumped to 0.6.0
-- Added several REST routes. Change needed due to pending frontend separation.
+- Added several REST routes. Change needed due to pending [frontend separation](https://nekode.yusur.moe/yusur/vigil).
 - Deprecated the old web routes except for `/report` and `/admin`
 
 ## 0.4.0
 
-- Added dependency to [SUOU](https://github.com/sakuragasaki46/suou) library
+- Added dependency to [SUOU](https://github.com/yusurko/suou) library
 - Users can now block each other
     + Blocking a user prevents them from seeing your comments, posts (standalone or in feed) and profile
 - Added user strikes: a strike logs the content of a removed message for future use
