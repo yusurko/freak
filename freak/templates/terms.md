@@ -28,6 +28,8 @@ privacy-related requests. Any contact request knowingly from people younger than
 
 United States resident under the age of 18 are **not allowed** in any way to access our network without logging in.
 
+Australian and Danish users under the age of 16 are not authorized to use their accounts.
+
 New Digital Spirit reserves the right to require ID verification in case of age doubt or suspected security threat.
 
 Minors on New Digital Spirit Network are additionally bound to the [Minor Account Policy](https://ndspir.it/u18.html),

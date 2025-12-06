@@ -443,6 +443,12 @@ async def patch_settings_appearance(data: SettingsIn):
 
 ## TERMS
 
+@bp.get('/about/about')
+async def about_about():
+    return dict(
+        content=await render_template("about.md")
+    )
+
 @bp.get('/about/terms')
 async def terms():
     return dict(

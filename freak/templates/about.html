@@ -9,28 +9,9 @@
 
 {% block content %}
 <div class="content">
-  <h2>Stats</h2>
-  <ul>
-    <li># of posts: <strong>{{ post_count }}</strong></li>
-    <li># of active users (posters in the last 30 days): <strong>{{ user_count }}</strong></li>
-  </ul>
-
-  <h2>Software versions</h2>
-  <ul>
-    <li><strong>Python</strong>: {{ python_version }}</strong></li>
-    <li><strong>SQLAlchemy</strong>: {{ sa_version }}</li>
-    <li><strong>Quart</strong>: {{ quart_version }}</li>
-    <li><strong>{{ app_name }}</strong>: {{ app_version }}</li>
-  </ul>
-  
-  <h2>License</h2>
-  <p>Source code is available at: <a href="https://nekode.yusur.moe/yusur/freak">https://nekode.yusur.moe/yusur/freak</a></p>
-
-  {% if impressum %}
-  <h2>Legal Contacts</h2>
-  <pre>{{ impressum }}</pre>
-  {% endif %}
-
+{% filter to_markdown %}
+{% include "about.md" %}
+{% endfilter %}
 </div>
 {% endblock %}
 
