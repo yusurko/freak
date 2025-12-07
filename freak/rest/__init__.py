@@ -9,7 +9,7 @@ from quart import render_template, session
 from quart import abort, Blueprint, redirect, request, url_for
 from pydantic import BaseModel, Field
 from quart_auth import current_user, login_required, login_user, logout_user
-from quart_schema import  validate_request, validate_response
+from quart_schema import validate_request
 from quart_wtf.csrf import generate_csrf
 from sqlalchemy import delete, insert, select
 from suou import Snowflake, deprecated, makelist, not_implemented, want_isodate

@@ -10,6 +10,9 @@ from quart_auth import current_user
 from markupsafe import Markup
 from sqlalchemy import insert, select, update
 from suou import additem, not_implemented
+import logging
+
+logger = logging.getLogger(__name__)
 
 from freak import UserLoader
 from freak.utils import get_request_form
@@ -159,7 +162,14 @@ async def homepage():
 
 @bp.route('/admin/style.css')
 async def style_css():
-    return await send_from_directory(os.path.dirname(os.path.dirname(__file__)) + '/static/css', 'style.css')
+    css_dir = os.path.dirname(os.path.dirname(__file__)) + '/static/css'
+    try:
+        return await send_from_directory(css_dir, 'style.css')
+    except Exception as e:
+        # Docker 
+        logger.error(e)
+        with open(os.path.join(css_dir, 'style.css')) as f:
+            return f.read(), {"content-type": "text/css"}
 
 @bp.route('/admin/reports/')
 @admin_required
