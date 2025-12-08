@@ -162,14 +162,7 @@ async def homepage():
 
 @bp.route('/admin/style.css')
 async def style_css():
-    css_dir = os.path.dirname(os.path.dirname(__file__)) + '/static/css'
-    try:
-        return await send_from_directory(css_dir, 'style.css')
-    except Exception as e:
-        # Docker 
-        logger.error(e)
-        with open(os.path.join(css_dir, 'style.css')) as f:
-            return f.read(), {"content-type": "text/css"}
+    return redirect('/static/admin/style.css'), 303
 
 @bp.route('/admin/reports/')
 @admin_required
