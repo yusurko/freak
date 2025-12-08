@@ -26,7 +26,7 @@ from suou import twocolon_list, WantsContentType
 
 from .colors import color_themes, theme_classes
 
-__version__ = '0.5.0-dev48'
+__version__ = '0.5.0-dev49'
 
 APP_BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -235,7 +235,11 @@ async def error_404(body):
         logger.error(f'Exception in find_guild_or_user: {e}')
         pass
     if app_config.server_name not in (None, request.host): 
-        logger.warning(f'request host {request.host!r} is different from configured server name {app_config.server_name}')
+        logger.warning(f'request host {request.host!r} is different from configured server name {app_config.server_name!r}')
+        if request.referrer:
+            logger.warning(f'(referrer is {request.referrer!r}')
+        if request.host == request.referrer:
+            return {"error": "Loop detected"}, 508
         return redirect('//' + app_config.server_name + request.full_path), 307
     return await error_handler_for(404, 'Not found', '404.html')
 
