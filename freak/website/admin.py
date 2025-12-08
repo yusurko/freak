@@ -14,7 +14,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from freak import UserLoader
+from freak import UserLoader, app_config
 from freak.utils import get_request_form
 
 from ..models import REPORT_REASON_STRINGS, REPORT_REASONS, REPORT_TARGET_COMMENT, REPORT_TARGET_POST, REPORT_UPDATE_COMPLETE, REPORT_UPDATE_ON_HOLD, REPORT_UPDATE_REJECTED, Comment, Post, PostReport, User, UserStrike, db
@@ -162,7 +162,7 @@ async def homepage():
 
 @bp.route('/admin/style.css')
 async def style_css():
-    return redirect('/static/admin/style.css'), 303
+    return redirect(f'//{app_config.server_name}/static/admin/style.css'), 303
 
 @bp.route('/admin/reports/')
 @admin_required
