@@ -446,7 +446,11 @@ async def patch_settings_appearance(data: SettingsIn):
 @bp.get('/about/about')
 async def about_about():
     return dict(
-        content=await render_template("about.md")
+        content=await render_template("about.md",
+            quart_version=quart_version,
+            sa_version=sa_version,
+            python_version=sys.version.split()[0]
+        )
     )
 
 @bp.get('/about/terms')

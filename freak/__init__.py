@@ -26,7 +26,7 @@ from suou import twocolon_list, WantsContentType
 
 from .colors import color_themes, theme_classes
 
-__version__ = '0.5.0-dev49'
+__version__ = '0.5.0-dev50'
 
 APP_BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
