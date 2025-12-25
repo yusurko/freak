@@ -9,6 +9,7 @@ from quart import Blueprint, abort, redirect, render_template, request, send_fro
 from quart_auth import current_user
 from markupsafe import Markup
 from sqlalchemy import insert, select, update
+from sqlalchemy.ext.asyncio import AsyncSession
 from suou import additem, not_implemented
 import logging
 
@@ -97,55 +98,54 @@ def get_content(target) -> str | None:
 REPORT_ACTIONS = {}
 
 @additem(REPORT_ACTIONS, '1')
-async def accept_report(target, source: PostReport):
-    async with db as session:
-        if source.is_critical():
-            warnings.warn('attempted remove on a critical report case, striking instead', UserWarning)
-            return await strike_report(target, source)
+async def accept_report(target, source: PostReport, session: AsyncSession):
+    if source.is_critical():
+        warnings.warn('attempted remove on a critical report case, striking instead', UserWarning)
+        return await strike_report(target, source)
 
-        await remove_content(target, source.reason_code)
+    await remove_content(target, source.reason_code)
 
-        source.update_status = REPORT_UPDATE_COMPLETE
-        # XXX disabled because of a session conflict
-        #session.add(source)
+    source.update_status = REPORT_UPDATE_COMPLETE
+    session.add(source)
+    await session.commit()
 
 
 @additem(REPORT_ACTIONS, '2')
-async def strike_report(target, source: PostReport):
-    async with db as session:
-        await remove_content(target, source.reason_code)
+async def strike_report(target, source: PostReport, session: AsyncSession):
+    await remove_content(target, source.reason_code)
 
-        author = get_author(target)
-        if author:
-            session.execute(insert(UserStrike).values(
-                user_id = author.id,
-                target_type = TARGET_TYPES[type(target)],
-                target_id = target.id,
-                target_content = get_content(target),
-                reason_code = source.reason_code,
-                issued_by_id = current_user.id
-            ))
+    author = get_author(target)
+    if author:
+        await session.execute(insert(UserStrike).values(
+            user_id = author.id,
+            target_type = TARGET_TYPES[type(target)],
+            target_id = target.id,
+            target_content = get_content(target),
+            reason_code = source.reason_code,
+            issued_by_id = current_user.id
+        ))
 
-            if source.is_critical():
-                author.banned_at = datetime.datetime.now()
-                author.banned_reason = source.reason_code
+        if source.is_critical():
+            author.banned_at = datetime.datetime.now()
+            author.banned_reason = source.reason_code
 
-        source.update_status = REPORT_UPDATE_COMPLETE
-        #session.add(source)
+    source.update_status = REPORT_UPDATE_COMPLETE
+    session.add(source)
+    await session.commit()
 
 
 @additem(REPORT_ACTIONS, '0')
-async def reject_report(target, source: PostReport):
-    async with db as session:
-        source.update_status = REPORT_UPDATE_REJECTED
-        #session.add(source)
+async def reject_report(target, source: PostReport, session: AsyncSession):
+    source.update_status = REPORT_UPDATE_REJECTED
+    session.add(source)
+    await session.commit()
 
 
 @additem(REPORT_ACTIONS, '3')
-async def withhold_report(target, source: PostReport):
-    async with db as session:
-        source.update_status = REPORT_UPDATE_ON_HOLD
-        #session.add(source)
+async def withhold_report(target, source: PostReport, session: AsyncSession):
+    source.update_status = REPORT_UPDATE_ON_HOLD
+    session.add(source)
+    await session.commit()
 
 
 @additem(REPORT_ACTIONS, '4')
@@ -184,10 +184,10 @@ async def report_detail(id: int):
         if request.method == 'POST':
             form = await get_request_form()
             action = REPORT_ACTIONS[form['do']]
-            await action(target, report)
+            await action(target, report, session)
             return redirect(url_for('admin.reports'))
-    return await render_template('admin/admin_report_detail.html', report=report,
-        report_reasons=REPORT_REASON_STRINGS)
+        return await render_template('admin/admin_report_detail.html', report=report,
+            report_reasons=REPORT_REASON_STRINGS)
 
 @bp.route('/admin/strikes/')
 @admin_required
