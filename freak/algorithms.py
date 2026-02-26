@@ -1,12 +1,14 @@
 
+from __future__ import annotations
 
+from freak.accounts import UserLoader
 from quart_auth import current_user
-from sqlalchemy import and_, distinct, func, select
+from sqlalchemy import and_, distinct, func, or_, select
 from suou import not_implemented
 
 from .models import Comment, Member, Post, Guild, User
 
-
+current_user: UserLoader
 
 def cuser() -> User:
     return current_user.user if current_user else None
@@ -17,6 +19,21 @@ def cuser_id() -> int:
 def public_timeline():
     return select(Post).join(User, User.id == Post.author_id).where(
         Post.privacy == 0, User.not_suspended(), Post.not_removed(), User.has_not_blocked(Post.author_id, cuser_id())
+    ).order_by(Post.created_at.desc())
+
+def private_timeline(cuser: User):
+    return select(Post).join(User, User.id == Post.author_id).join(Guild, Guild.id == Post.topic_id
+        ).join(Member, Member.guild_id == Guild.id, isouter = True
+        ##).join(Friendship
+        ).where(
+        or_(
+            Member.user_id == cuser_id(),
+            ##Friendship.,
+        ),
+        User.not_suspended(), Post.not_removed(), User.has_not_blocked(Post.author_id, cuser_id()),
+        or_(Post.privacy == 0, Post.privacy == 1,
+            ##and_(Post.privacy == 2, Friendsip.)
+        )
     ).order_by(Post.created_at.desc())
 
 def topic_timeline(gname):

@@ -26,7 +26,7 @@ from suou import twocolon_list, WantsContentType
 
 from .colors import color_themes, theme_classes
 
-__version__ = '0.5.0-dev50'
+__version__ = '0.5.0-dev60'
 
 APP_BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -234,7 +234,7 @@ async def error_404(body):
     except Exception as e:
         logger.error(f'Exception in find_guild_or_user: {e}')
         pass
-    if app_config.server_name not in (None, request.host): 
+    if app_config.server_name not in (None, request.host) and app_config.force_server_name: 
         logger.warning(f'request host {request.host!r} is different from configured server name {app_config.server_name!r}')
         if request.referrer:
             logger.warning(f'(referrer is {request.referrer!r}')

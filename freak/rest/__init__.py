@@ -19,7 +19,7 @@ from werkzeug.security import check_password_hash
 from suou.quart import add_rest
 
 from freak.accounts import LoginStatus, check_login
-from freak.algorithms import public_timeline, top_guilds_query, topic_timeline, user_timeline
+from freak.algorithms import private_timeline, public_timeline, top_guilds_query, topic_timeline, user_timeline
 from freak.search import SearchQuery
 
 from ..models import Comment, Guild, Post, PostUpvote, User, db
@@ -276,6 +276,34 @@ async def guild_feed(gname: str):
 
     return dict(guilds={f'{Snowflake(gu.id):l}': gj}, feed=feed)
 
+@bp.get('/guild/@<gname>/mods')
+@login_required
+async def guild_moderators(gname: str):
+    async with db as session:
+        gu: Guild | None = (await session.execute(select(Guild).where(Guild.name == gname))).scalar()
+
+        if gu is None:
+            return dict(error='Not found'), 404
+
+        obj = dict(
+            banned = False,
+            unmoderated = False,
+            has = []
+        )
+        if not gu.owner_id:
+            obj['unmoderated'] = True
+            # unmoderated
+        elif await gu.has_exiled(current_user.user):
+            obj['banned'] = True
+            obj['error'] = 'Moderator list is hidden because you are banned'
+            # TODO appeal button
+        else:
+            async for moder in gu.moderators():
+                mu = moder.user.simple_info()
+                mu['is_owner'] = moder.is_owner
+                obj['has'].append(mu)
+
+        return obj
 
 ## CREATE ##
 
@@ -356,11 +384,24 @@ async def logout():
 async def home_feed():
     async with db as session:
         me = current_user.user
+        posts = await db.paginate(private_timeline(me))
+        feed = []
+        async for post in posts:
+            post: Post
+            feed.append(await post.feed_info_counts())
+
+        return dict(feed=feed)
+
+@bp.get('/explore/feed')
+@login_required
+async def explore_feed():
+    async with db as session:
         posts = await db.paginate(public_timeline())
         feed = []
         async for post in posts:
+            post: Post
             feed.append(await post.feed_info_counts())
-
+        
         return dict(feed=feed)
 
 

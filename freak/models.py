@@ -89,6 +89,7 @@ ILLEGAL_USERNAMES = tuple((
     ## VVVVIP
     'potus realdonaldtrump elonmusk teddysphotos mrbeast jkrowling pewdiepie '
     'elizabethii elizabeth2 king queen pontifex hogwarts lumos alohomora isis daesh retards '
+    'charliekirk '
 ).split())
 
 def username_is_legal(username: str) -> bool:
@@ -303,11 +304,11 @@ class User(Base):
         Remove any relationship between two users.
         Executed before block.
         """
-        # TODO implement in 0.5
+        # TODO implement in 0.6
         ...
 
     def has_subscriber(self, other: User) -> bool:
-        # TODO implement in 0.5
+        # TODO implement in 0.6
         return False #bool(session.execute(select(Friendship).where(...)).scalar())
 
     @classmethod
