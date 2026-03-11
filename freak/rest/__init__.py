@@ -36,11 +36,6 @@ csrf.exempt(bp)
 
 current_user: UserLoader
 
-## TODO deprecate auth_required since it does not work
-## will be removed in 0.6
-from suou.flask_sqlalchemy import require_auth
-auth_required = deprecated('use login_required() and current_user instead')(require_auth(User, db))
-
 @not_implemented()
 async def authenticated():
     pass

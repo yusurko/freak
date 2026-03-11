@@ -15,7 +15,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, UniqueConstraint, an
     CheckConstraint, Date, DateTime, Boolean, func, BigInteger, \
     SmallInteger, select, update, Table
 from sqlalchemy.orm import Relationship, relationship
-from suou.sqlalchemy_async import SQLAlchemy
+from suou.sqlalchemy.asyncio import SQLAlchemy
 from suou import SiqType, Snowflake, Wanted, deprecated, makelist, not_implemented, want_isodate
 from suou.sqlalchemy import create_session, declarative_base, id_column, parent_children, snowflake_column
 from werkzeug.security import check_password_hash
