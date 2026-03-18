@@ -5,18 +5,22 @@ import sys
 from typing import Iterable, TypeVar
 import logging
 
+from importlib.metadata import version
 from quart import render_template, session
 from quart import abort, Blueprint, redirect, request, url_for
 from pydantic import BaseModel, Field
 from quart_auth import current_user, login_required, login_user, logout_user
 from quart_schema import validate_request
 from quart_wtf.csrf import generate_csrf
-from sqlalchemy import delete, insert, select
+from sqlalchemy import delete, insert, select, __version__ as sa_version
 from suou import Snowflake, deprecated, makelist, not_implemented, want_isodate
 
 from suou.classtools import MISSING, MissingType
 from werkzeug.security import check_password_hash
 from suou.quart import add_rest
+
+# quart does not define __version__
+quart_version = version('quart')
 
 from freak.accounts import LoginStatus, check_login
 from freak.algorithms import private_timeline, public_timeline, top_guilds_query, topic_timeline, user_timeline
