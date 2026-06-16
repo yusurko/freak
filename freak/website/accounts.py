@@ -80,6 +80,7 @@ def _check_ip_bans(ip) -> bool:
         return True
     return False
 
+@deprecated('register accounts from the API instead')
 async def validate_register_form() -> dict:
     form = await get_request_form()
     f = dict()
@@ -106,10 +107,10 @@ async def validate_register_form() -> dict:
 
     f['email'] = form['email'] or None
 
-    is_ip_banned: bool = await _check_ip_bans()
+    # is_ip_banned: bool = await _check_ip_bans()
 
-    if is_ip_banned:
-        raise ValueError('Your IP address is banned.')
+    # if is_ip_banned:
+    #     raise ValueError('Your IP address is banned.')
         
     if _currently_logged_in() and not form.get('confirm_another'):
         raise ValueError('You are already logged in. Please confirm you want to create another account by checking the option.')
@@ -117,13 +118,6 @@ async def validate_register_form() -> dict:
         raise ValueError('You must accept Terms in order to create an account.')
 
     return f
-
-
-class RegisterStatus(enum.Enum):
-    SUCCESS = 0
-    ERROR = 1
-    USERNAME_TAKEN = 2
-    IP_BANNED = 3
     
 
 @bp.post('/register')

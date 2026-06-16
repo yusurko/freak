@@ -384,6 +384,8 @@ class User(Base):
             user = (await session.execute(user_q)).scalar()
         return user
 
+# TODO add table UserInvite [planned for 0.6]
+
 # UserBlock table is at the top !!
 
 ## END User

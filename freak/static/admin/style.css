@@ -269,9 +269,10 @@ header.header {
       border-radius: 0;
       border: 0;
       border-bottom: 2px solid var(--border);
-      background-color: inherit;
-      focus-background-color: var(--bg-sharp);
-      focus-border-color: var(--accent); }
+      background-color: inherit;}
+      header.header .mini-search-bar [type="search"]:focus {
+        background-color: var(--bg-sharp);
+        border-color: var(--accent); }
     header.header .mini-search-bar [type="submit"] {
       height: 0;
       width: 0;

@@ -1,13 +1,19 @@
 
 
+import datetime
 import logging
 import enum
+import re
 
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
+from suou import age_and_days
 from suou.sqlalchemy.asyncio import AsyncSession
-from .models import User, db
+from werkzeug.security import generate_password_hash
+from .models import REPORT_REASONS, User, db
 from quart_auth import AuthUser, Action as _Action
+from quart_wtf.utils import validate_csrf 
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +36,60 @@ def check_login(user: User | None, password: str) -> LoginStatus:
     except Exception as e:
         logger.error(f'{e}')
     return LoginStatus.ERROR
+
+class RegisterIn(BaseModel):
+    username: str
+    display_name: str = ""
+    password: str
+    confirm_password: str
+    email: str | None = None
+    birthday: str
+    invite_code: str | None = None
+
+class RegisterStatus(enum.Enum):
+    SUCCESS = 0
+    ERROR = 1
+    USERNAME_TAKEN = 2
+    IP_BANNED = 3
+    USERNAME_INVALID = 4
+    PASSWORD_INVALID = 5
+    DATE_INVALID = 6
+
+async def validate_register(data: RegisterIn) -> RegisterStatus | dict:
+    f = {}
+
+    try:
+        birthday = datetime.date.fromisoformat(data.birthday)
+        birthday_age = age_and_days(birthday)
+
+        if birthday_age == (0, 0):
+            return RegisterStatus.DATE_INVALID
+        if birthday_age < (14,):
+            f['banned_at'] = datetime.datetime.now()
+            f['banned_reason'] = REPORT_REASONS['underage']
+    except ValueError:
+        return RegisterStatus.DATE_INVALID
+
+    f['username'] = data.username.lower()
+    if not re.fullmatch('[a-z0-9_-]+', f['username']):
+        return RegisterStatus.USERNAME_INVALID
+    f['display_name'] = data.display_name
+
+    if not data.password or data.password != data.confirm_password:
+        return RegisterStatus.PASSWORD_INVALID
+    f['passhash'] = generate_password_hash(data.password)
+
+    f['email'] = data.email
+
+    async with db as session:
+        # TODO check ip ban
+        # TODO implement IpBan table
+
+        # TODO check invite code [will be implemented in 0.6]
+
+        pass
+
+    return f
 
 
 class UserLoader(AuthUser):

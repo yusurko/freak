@@ -10,16 +10,19 @@ from __future__ import annotations
 import re
 from quart import Blueprint, abort, flash, redirect, request
 from sqlalchemy import delete, insert, select
-
-from freak import UserLoader
-from freak.utils import get_request_form
-from .models import Guild, Member, UserBlock, db, User, Post, PostUpvote, username_is_legal
 from quart_auth import current_user, login_required
+from suou import deprecated
+
+from . import UserLoader
+from .utils import get_request_form
+from .models import Guild, Member, UserBlock, db, User, Post, PostUpvote, username_is_legal
+
 
 current_user: UserLoader
 
 bp = Blueprint('ajax', __name__)
 
+@deprecated("please use /v1/username/@<username>")
 @bp.route('/username_availability/<username>')
 @bp.route('/ajax/username_availability/<username>')
 async def username_availability(username: str):

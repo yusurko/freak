@@ -1,6 +1,7 @@
 
 from __future__ import annotations
 import datetime
+import re
 import sys
 from typing import Iterable, TypeVar
 import logging
@@ -13,10 +14,10 @@ from quart_auth import current_user, login_required, login_user, logout_user
 from quart_schema import validate_request
 from quart_wtf.csrf import generate_csrf
 from sqlalchemy import delete, insert, select, __version__ as sa_version
-from suou import Snowflake, deprecated, makelist, not_implemented, want_isodate
+from suou import Snowflake, age_and_days, deprecated, makelist, not_implemented, want_isodate
 
 from suou.classtools import MISSING, MissingType
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 from suou.quart import add_rest
 
 # quart does not define __version__
@@ -26,7 +27,7 @@ from freak.accounts import LoginStatus, check_login
 from freak.algorithms import private_timeline, public_timeline, top_guilds_query, topic_timeline, user_timeline
 from freak.search import SearchQuery
 
-from ..models import Comment, Guild, Post, PostUpvote, User, db
+from ..models import REPORT_REASONS, Comment, Guild, Post, PostUpvote, User, db, username_is_legal
 from .. import UserLoader, app, app_config,  __version__ as freak_version, csrf
 
 logger = logging.getLogger(__name__)
@@ -35,7 +36,7 @@ _T = TypeVar('_T')
 bp = Blueprint('rest', __name__, url_prefix='/v1')
 rest = add_rest(app, '/v1', '/ajax')
 
-## XXX potential security hole, but needed for REST to work
+## XXX potential security hole, but somewhat needed for REST to work
 csrf.exempt(bp)
 
 current_user: UserLoader
@@ -57,7 +58,8 @@ async def health():
             post_count = await Post.count(),
             user_count = await User.active_count(),
             me = Snowflake(current_user.id).to_b32l() if current_user else None,
-            color_theme = current_user.color_theme if current_user else 0
+            color_theme = current_user.color_theme if current_user else 0,
+            invite_only = False # TODO implement invites!
         )
 
         return hi
@@ -375,6 +377,50 @@ async def logout():
     logout_user()
     return '', 204
 
+from ..accounts import RegisterIn, RegisterStatus, validate_register
+
+
+@bp.post('/register')
+@validate_request(RegisterIn)
+async def register(data: RegisterIn):
+    # validate register form
+    match await validate_register(data):
+        case RegisterStatus.DATE_INVALID:
+            abort(400, "Invalid date format")
+        case RegisterStatus.USERNAME_INVALID:
+            abort(400, "Username can contain only letters, digits, underscores and dashes.")
+        case RegisterStatus.PASSWORD_INVALID:
+            abort(400, "Passwords do not match")
+        case RegisterStatus.USERNAME_TAKEN:
+            abort(409, "A user with this username already exists.")
+        case RegisterStatus.IP_BANNED:
+            abort(403, "Your IP address is banned.")
+        case user_data:
+            if not isinstance(user_data, dict):
+                abort(500)
+            async with db as session:
+                new_user_id: int = (await session.execute(insert(User).values(**user_data).returning(User.id))).scalar()
+                
+                session.commit()
+                return dict(id=Snowflake(new_user_id).to_b32l()), 200
+
+
+@bp.get('/username/@<username>')
+async def username_availability(username):
+    is_valid = username_is_legal(username)
+
+    if is_valid:
+        async with db as session:
+            user = (await session.execute(select(User).where(User.username == username))).scalar()
+
+            is_available = user is None or user == current_user.user
+    else:
+        is_available = False
+
+    return {
+        "is_available": is_available,
+        "is_valid": is_valid
+    }
 
 ## HOME ##
 
