@@ -7,7 +7,6 @@ DEPRECATED in 0.5 in favor of /v1/ (REST)
 
 from __future__ import annotations
 
-import re
 from quart import Blueprint, abort, flash, redirect, request
 from sqlalchemy import delete, insert, select
 from quart_auth import current_user, login_required

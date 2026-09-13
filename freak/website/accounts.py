@@ -9,12 +9,13 @@ import datetime
 from typing import Mapping
 from quart import Blueprint, render_template, request, redirect, flash
 from quart_auth import AuthUser, login_required, login_user, logout_user, current_user
+from suou import age_and_days
 from suou.functools import deprecated
 from werkzeug.exceptions import Forbidden
 
 from .. import UserLoader
 from ..models import REPORT_REASONS, db, User
-from ..utils import age_and_days, get_request_form
+from ..utils import get_request_form
 from sqlalchemy import select, insert
 from werkzeug.security import generate_password_hash
 
