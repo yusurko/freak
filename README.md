@@ -85,7 +85,7 @@ Licensed under the [Apache License, Version 2.0](LICENSE), a non-copyleft free a
 
 This is a hobby project, made available “AS IS”, with __no warranty__ express or implied.
 
-I (sakuragasaki46) may NOT be held accountable for Your use of my code.
+I (yusurko) may NOT be held accountable for Your use of my code.
 
 > It's pointless to file a lawsuit because you feel damaged, and it's only going to turn against you. What a waste of money you could have spent on a vacation or charity, or invested in stocks.
 

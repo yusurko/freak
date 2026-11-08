@@ -16,7 +16,6 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from suou import Snowflake, ssv_list
 from werkzeug.routing import BaseConverter
-from sassutils.wsgi import SassMiddleware
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from suou.configparse import ConfigOptions, ConfigValue
@@ -24,7 +23,7 @@ from suou.configparse import ConfigOptions, ConfigValue
 from .colors import color_themes, theme_classes
 from .utils import twocolon_list
 
-__version__ = '0.4.0'
+__version__ = '0.4.1'
 
 APP_BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -50,11 +49,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = app_config.database_url
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 
 from .models import db, User, Post
-
-# SASS
-app.wsgi_app = SassMiddleware(app.wsgi_app, dict(
-    freak=('static/sass', 'static/css', '/static/css', True)
-))
 
 # proxy fix
 if app_config.app_is_behind_proxy:

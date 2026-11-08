@@ -16,9 +16,8 @@ dependencies = [
     "Alembic",
     "Markdown>=3.0.0",
     "PsycoPG2-binary",
-    "libsass",
     "setuptools>=78.1.0",
-    "sakuragasaki46-suou>=0.4.0"
+    "suou>=0.14.2"
 ]
 requires-python =  ">=3.10"
 classifiers = [

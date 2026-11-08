@@ -24,7 +24,7 @@ dist/
 .err
 .vscode
 /run.sh
-**/static/css
+#**/static/css
 #**/static/js
 **.priv.js
 /ver.sh

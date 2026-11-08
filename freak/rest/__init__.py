@@ -1,10 +1,10 @@
 
 
 from flask import Blueprint, redirect, url_for
+from flask_login import login_required
 from flask_restx import Resource
 from sqlalchemy import select
 from suou import Snowflake
-from suou.flask_sqlalchemy import require_auth
 
 from suou.flask_restx import Api
 
@@ -12,8 +12,6 @@ from ..models import Post, User, db
 
 rest_bp = Blueprint('rest', __name__, url_prefix='/v1')
 rest = Api(rest_bp)
-
-auth_required = require_auth(User, db)
 
 @rest.route('/nurupo')
 class Nurupo(Resource):
@@ -29,7 +27,7 @@ class Nurupo(Resource):
 
 @rest.route('/user/@me')
 class UserInfoMe(Resource):
-    @auth_required(required=True)
+    @login_required
     def get(self, user: User):
         return redirect(url_for('rest.UserInfo', user.id)), 302
 

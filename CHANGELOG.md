@@ -1,8 +1,17 @@
 # Changelog
 
+## 0.4.1
+
+- libsuou bumped to 0.14.2
+- Removed Sass, back to plain CSS. Can't believe this, but libsass-python has gone EOL with no valid and stable replacement.
+
+## 0.5.0
+
+I gave up on releasing 0.5.0.
+
 ## 0.4.0
 
-- Added dependency to [SUOU](https://github.com/sakuragasaki46/suou) library
+- Added dependency to [SUOU](https://github.com/yusurko/suou) library
 - Users can now block each other
     + Blocking a user prevents them from seeing your comments, posts (standalone or in feed) and profile
 - Added user strikes: a strike logs the content of a removed message for future use
