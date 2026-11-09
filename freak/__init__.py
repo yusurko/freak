@@ -23,7 +23,7 @@ from suou.configparse import ConfigOptions, ConfigValue
 from .colors import color_themes, theme_classes
 from .utils import twocolon_list
 
-__version__ = '0.4.1'
+__version__ = '0.4.2'
 
 APP_BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 

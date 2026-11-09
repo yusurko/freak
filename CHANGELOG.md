@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.2
+
+- Fix requirements
+
 ## 0.4.1
 
 - libsuou bumped to 0.14.2
